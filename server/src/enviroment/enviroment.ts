@@ -1,1 +1,5 @@
-export class Enviroment {}
+export class Enviroment {
+  constructor() {
+    console.log('enviroment creado');
+  }
+}
