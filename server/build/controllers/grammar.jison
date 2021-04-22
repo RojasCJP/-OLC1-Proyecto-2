@@ -116,6 +116,7 @@ instruccion: if
     |declaracion_funciones
     |llamada_funciones
     |actualizacion
+    |print
     |error LLAVE_C { console.error('Este es un error sintáctico: ' + yytext + ', en la linea: ' + this._$.first_line + ', en la columna: ' + this._$.first_column); }
     |error P_COMA { console.error('Este es un error sintáctico: ' + yytext + ', en la linea: ' + this._$.first_line + ', en la columna: ' + this._$.first_column); };
 
@@ -224,6 +225,8 @@ declaracion_funciones: tipo IDENTIFICADOR PARENTESIS_A parametros PARENTESIS_C L
     |VOID IDENTIFICADOR PARENTESIS_A parametros PARENTESIS_C LLAVE_A instrucciones LLAVE_C
     |tipo IDENTIFICADOR PARENTESIS_A parametros PARENTESIS_C LLAVE_A LLAVE_C
     |VOID IDENTIFICADOR PARENTESIS_A parametros PARENTESIS_C LLAVE_A LLAVE_C;
+
+print: PRINT PARENTESIS_A valor PARENTESIS_C P_COMA{console.log("print");};
 
 llamada_funciones: IDENTIFICADOR PARENTESIS_A valores PARENTESIS_C P_COMA;
 
