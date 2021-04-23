@@ -3,7 +3,7 @@ import { EnumType, Sym } from '../enviroment/sym';
 import { Instruccion } from './instruccion';
 import { Enviroment } from '../enviroment/enviroment';
 
-export class DeclaracionParams implements Instruccion {
+export class Declaration implements Instruccion {
   public id: string;
   private value: Expression;
   private symResult: Sym[] = [];
@@ -28,7 +28,7 @@ export class DeclaracionParams implements Instruccion {
   public execute(env: Enviroment): void {
     if (this.value != null || this.value != undefined) {
       this.value.paramsResult = this.executeParams(this.value, env);
-      let valueResult: Sym = this.value.execute(env) as Sym;
+      let valueResult: Sym = this.value.execute(env);
       if (valueResult.type == this.type) {
         let sym: Sym = new Sym(valueResult.type, valueResult.value);
         let insert: boolean = env.insert(this.id, sym, this.line, this.column);

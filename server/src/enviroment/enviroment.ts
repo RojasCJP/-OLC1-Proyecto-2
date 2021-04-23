@@ -3,12 +3,16 @@ import { Sym } from './sym';
 export class Enviroment {
   public table: Map<string, Sym>;
   public printList: string[];
-  public previous: Enviroment;
+  public previous: Enviroment | null;
 
-  constructor() {
+  constructor(previous: Enviroment | null) {
     this.table = new Map<string, Sym>();
     this.printList = [];
-    this.previous = new Enviroment();
+    if (previous instanceof Enviroment) {
+      this.previous = previous;
+    } else {
+      this.previous = null;
+    }
   }
 
   public getGlobal(): Enviroment | null {
@@ -29,7 +33,7 @@ export class Enviroment {
 
   public search(name: string, line: number, column: number): Sym | undefined {
     name = name.toLowerCase();
-    let env: Enviroment;
+    let env: Enviroment | null;
     for (env = this; env != null; env = env.previous) {
       if (env.table.has(name)) {
         //este unefined se pone unicamente para que typescript no lo detecte como un error, al igual que el retorno
@@ -47,7 +51,7 @@ export class Enviroment {
     column: number
   ): void {
     name = name.toLowerCase();
-    let env: Enviroment;
+    let env: Enviroment | null;
     for (env = this; env != null; env = env.previous) {
       if (env.table.has(name)) {
         env.table.delete(name);
@@ -60,7 +64,7 @@ export class Enviroment {
     this.previous = previeus;
   }
 
-  public getPrevious(): Enviroment {
+  public getPrevious(): Enviroment | null {
     return this.previous;
   }
 }
