@@ -1,10 +1,21 @@
+%{
+    const controllador = require("./grammarController");
+    const declaration = require("../tree/declaracion");
+    const exp = require("../tree/expression");
+    const func_call = require("../tree/function_call");
+    const func = require("../tree/function");
+    const inst = require("../tree/instruccion");
+    const paramsIns = require("../tree/parametersIns");
+    const sym = require("../enviroment/sym")
+    var err;
+    var instructionList = controllador.GrammarController.instructionList;
+%}
 %lex
 
 %options case-insensitive
 
 %%
 
-"." return "PUNTO";
 "," return "COMA";
 ";" return 'P_COMA';
 ":" return 'DOSPUNTOS';
@@ -70,13 +81,13 @@
 [ \r\t] {}
 \n      {}
 
-[0-9]+\b                return 'ENTERO';
-[0-9]+("."[0-9]+)?\b    return 'DECIMAL';
-\".+\"                  return 'CADENA';
-\'.\'                   return 'CARACTER'
-"true"                  return 'TRUE';
-"false"                 return 'FALSE';
-[a-zA-z_]([0-9a-zA-z_])* return 'IDENTIFICADOR';
+[0-9]+("."[0-9]+)\b         return 'DECIMAL';
+[0-9]+\b                    return 'ENTERO';
+("\"")([^\"\\]|\\.)*("\"")  return 'CADENA';
+"'"([^']*)"'"               return 'CARACTER'
+"true"                      return 'TRUE';
+"false"                     return 'FALSE';
+[a-zA-z_]([0-9a-zA-z_])*    return 'IDENTIFICADOR';
 
 <<EOF>>              return 'EOF';
 
@@ -89,48 +100,85 @@
 %right 'NOT'
 %left 'IGUALIGUAL' 'DIFERENTE' 'MENOR' 'MENORIGUAL' 'MAYOR' 'MAYORIGUAL'
 %left 'MAS' 'MENOS'
-%left 'MULTI' 'DIVISION'
+%left 'MULTI' 'DIVISION' 'MODULO'
 %left 'POTENCIA'
 %right UMENOS
+%left 'PARENTESIS_A' 'PARENTESIS_C'
 
 %start init
 
 %%
 
-init: instrucciones EOF;
+init: instrucciones EOF {controllador.GrammarController.instructionList = $1;}
+;
 
-instrucciones: instruccion instrucciones
-    | instruccion; 
+instrucciones: instrucciones instruccion {
+        $$ = $1;
+        $$.push($2);
+    }
+    | instruccion {
+        $$ = []
+        $$.push($1)
+    }
+; 
 
-instruccion: if
-    |switch
-    |dowhile
-    |while
-    |for
-    |declaracion_variables
-    |declaracion_arreglos
-    |declaracion_listas
-    |asignacion_variables
-    |asignacion_arreglos
-    |asignacion_listas
-    |declaracion_funciones
-    |llamada_funciones
-    |actualizacion
-    |print
-    |error LLAVE_C { console.error('Este es un error sintáctico: ' + yytext + ', en la linea: ' + this._$.first_line + ', en la columna: ' + this._$.first_column); }
+sentencias: LLAVE_A instrucciones LLAVE_C
+    |LLAVE_A LLAVE_C
+    |error LLAVE_C {console.log('Este es un error sintáctico: ' + yytext + ', en la linea: ' + this._$.first_line + ', en la columna: ' + this._$.first_column);}
+;
+
+instruccion: declaracion_variables { $$ = $1 }
+    |asignacion_variables { $$ = $1 }
+    |actualizacion {$$ = $1 }
     |error P_COMA { console.error('Este es un error sintáctico: ' + yytext + ', en la linea: ' + this._$.first_line + ', en la columna: ' + this._$.first_column); };
 
-actualizacion: incremento
-    |decremento;
+expression: MENOS expression %prec UMENOS
+    |PARENTESIS_A tipo PARENTESIS_C expression
+    |expression MAS expression {$$ = new exp.Expression(exp.Expression_type.SUMA, @2.first_line, @2.first_column, $1, $2);}
+    |expression MENOS expression {$$ = new exp.Expression(exp.Expression_type.RESTA, @2.first_line, @2.first_column, $1, $2);}
+    |expression MULTI expression {$$ = new exp.Expression(exp.Expression_type.MULTIPLICACION, @2.first_line, @2.first_column, $1, $2);}
+    |expression DIVISION expression {$$ = new exp.Expression(exp.Expression_type.DIVISION, @2.first_line, @2.first_column, $1, $2);} 
+    |expression POTENCIA expression {$$ = new exp.Expression(exp.Expression_type.POTENCIA, @2.first_line, @2.first_column, $1, $2);}
+    |expression MODULO expression {$$ = new exp.Expression(exp.Expression_type.MODULO, @2.first_line, @2.first_column, $1, $2);}
+    |PARENTESIS_A expression PARENTESIS_C {$$=$2;}
+    |expression AND expression {$$ = new exp.Expression(exp.Expression_type.AND, @2.first_line, @2.first_column, $1, $2);}
+    |expression OR expression {$$ = new exp.Expression(exp.Expression_type.OR, @2.first_line, @2.first_column, $1, $2);}
+    |NOT expression
+    |expression MAYOR expression {$$ = new exp.Expression(exp.Expression_type.MAYOR, @2.first_line, @2.first_column, $1, $2);}
+    |expression MENOR expression {$$ = new exp.Expression(exp.Expression_type.MENOR, @2.first_line, @2.first_column, $1, $2);}
+    |expression MAYORIGUAL expression {$$ = new exp.Expression(exp.Expression_type.MAYORIGUAL, @2.first_line, @2.first_column, $1, $2);}
+    |expression MENORIGUAL expression {$$ = new exp.Expression(exp.Expression_type.MENORIGUAL, @2.first_line, @2.first_column, $1, $2);}
+    |expression IGUALIGUAL expression {$$ = new exp.Expression(exp.Expression_type.IGUALIGUAL, @2.first_line, @2.first_column, $1, $2);}
+    |expression DIFERENTE expression {$$ = new exp.Expression(exp.Expression_type.DIFERENTE, @2.first_line, @2.first_column, $1, $2);}
+    |expression MAS MAS
+    |expression MENOS MENOS
+    |ENTERO {$$ = new exp.Expression(exp.Expression_type.ENTERO,this._$.first_line,this._$.first_column,null,null,$1);}
+    |DECIMAL {$$ = new exp.Expression(exp.Expression_type.DECIMAL,this._$.first_line,this._$.first_column,null,null,$1); console.log('hasta aquI');}
+    |CADENA {$$ = new exp.Expression(exp.Expression_type.CADENA,this._$.first_line,this._$.first_column,null,null,$1);}
+    |CARACTER {$$ = new exp.Expression(exp.Expression_type.CHAR,this._$.first_line,this._$.first_column,null,null,$1);}
+    |FALSE {$$ = new exp.Expression(exp.Expression_type.BOOLEAN,this._$.first_line,this._$.first_column,null,null,$1);}
+    |TRUE {$$ = new exp.Expression(exp.Expression_type.BOOLEAN,this._$.first_line,this._$.first_column,null,null,$1);}
+;
 
-if: IF PARENTESIS_A condicion PARENTESIS_C LLAVE_A instrucciones LLAVE_C
-    |IF PARENTESIS_A condicion PARENTESIS_C LLAVE_A instrucciones LLAVE_C ELSE LLAVE_A instrucciones LLAVE_C
-    |IF PARENTESIS_A condicion PARENTESIS_C LLAVE_A instrucciones LLAVE_C ELSE if
-    |IF PARENTESIS_A condicion PARENTESIS_C LLAVE_A LLAVE_C
-    |IF PARENTESIS_A condicion PARENTESIS_C LLAVE_A LLAVE_C ELSE LLAVE_A instrucciones LLAVE_C
-    |IF PARENTESIS_A condicion PARENTESIS_C LLAVE_A instrucciones LLAVE_C ELSE LLAVE_A LLAVE_C
-    |IF PARENTESIS_A condicion PARENTESIS_C LLAVE_A LLAVE_C ELSE LLAVE_A LLAVE_C
-    |IF PARENTESIS_A condicion PARENTESIS_C LLAVE_A LLAVE_C ELSE if;
+actualizacion: incremento
+    |decremento
+;
+
+declaracion_variables: tipo IDENTIFICADOR P_COMA {$$ = new declaration.Declaration($2,$1,null,@2.first_line,@2.first_column)}
+    |tipo IDENTIFICADOR IGUAL expression P_COMA {$$ = new declaration.Declaration($2,$1,$4,@2.first_line,@2.first_column)}
+;
+
+asignacion_variables: IDENTIFICADOR IGUAL expression P_COMA
+;
+
+if: IF PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C
+    |IF PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C ELSE LLAVE_A instrucciones LLAVE_C
+    |IF PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C ELSE if
+    |IF PARENTESIS_A expression PARENTESIS_C LLAVE_A LLAVE_C
+    |IF PARENTESIS_A expression PARENTESIS_C LLAVE_A LLAVE_C ELSE LLAVE_A instrucciones LLAVE_C
+    |IF PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C ELSE LLAVE_A LLAVE_C
+    |IF PARENTESIS_A expression PARENTESIS_C LLAVE_A LLAVE_C ELSE LLAVE_A LLAVE_C
+    |IF PARENTESIS_A expression PARENTESIS_C LLAVE_A LLAVE_C ELSE if;
 
 condicion: valor comparador valor
     |IDENTIFICADOR comparador valor
@@ -164,40 +212,17 @@ default: DEFAULT DOSPUNTOS instrucciones
     |DEFAULT DOSPUNTOS
     |DEFAULT DOSPUNTOS BREAK P_COMA;
 
-valor: ENTERO {console.log("entero");}
-    |DECIMAL {console.log("decimal");}
-    |CADENA {console.log("cadena");}
-    |CARACTER {console.log("caracter");}
-    |booleano {console.log("booleano")}
-    |operacion {console.log("operacion");};
 
-operacion: valor MAS valor
-    |valor MENOS valor
-    |valor MULTI valor
-    |valor DIVISION valor
-    |valor POTENCIA valor;
+while: WHILE PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C
+    |WHILE PARENTESIS_A expression PARENTESIS_C LLAVE_A LLAVE_C;
 
-while: WHILE PARENTESIS_A condicion PARENTESIS_C LLAVE_A instrucciones LLAVE_C
-    |WHILE PARENTESIS_A condicion PARENTESIS_C LLAVE_A LLAVE_C;
+for: FOR PARENTESIS_A declaracion_variables expression P_COMA actualizacion PARENTESIS_C LLAVE_A instrucciones LLAVE_C
+    |FOR PARENTESIS_A asignacion_variables expression P_COMA actualizacion PARENTESIS_C LLAVE_A instrucciones LLAVE_C
+    |FOR PARENTESIS_A declaracion_variables expression P_COMA actualizacion PARENTESIS_C LLAVE_A LLAVE_C
+    |FOR PARENTESIS_A asignacion_variables expression P_COMA actualizacion PARENTESIS_C LLAVE_A LLAVE_C;
 
-for: FOR PARENTESIS_A declaracion_variables condicion P_COMA actualizacion PARENTESIS_C LLAVE_A instrucciones LLAVE_C
-    |FOR PARENTESIS_A asignacion_variables condicion P_COMA actualizacion PARENTESIS_C LLAVE_A instrucciones LLAVE_C
-    |FOR PARENTESIS_A declaracion_variables condicion P_COMA actualizacion PARENTESIS_C LLAVE_A LLAVE_C
-    |FOR PARENTESIS_A asignacion_variables condicion P_COMA actualizacion PARENTESIS_C LLAVE_A LLAVE_C;
-
-dowhile: DO LLAVE_A instrucciones LLAVE_C WHILE PARENTESIS_A condicion PARENTESIS_C
-    |DO LLAVE_A LLAVE_C WHILE PARENTESIS_A condicion PARENTESIS_C;
-
-declaracion_variables: tipo IDENTIFICADOR P_COMA 
-    | tipo IDENTIFICADOR IGUAL valor P_COMA
-    | tipo IDENTIFICADOR IGUAL IDENTIFICADOR P_COMA
-    | tipo IDENTIFICADOR IGUAL acceso_arreglos P_COMA
-    | tipo IDENTIFICADOR IGUAL acceso_listas P_COMA;
-
-asignacion_variables: IDENTIFICADOR IGUAL valor P_COMA
-    | IDENTIFICADOR IGUAL IDENTIFICADOR P_COMA
-    | IDENTIFICADOR IGUAL acceso_arreglos P_COMA
-    | IDENTIFICADOR IGUAL acceso_listas P_COMA;
+dowhile: DO LLAVE_A instrucciones LLAVE_C WHILE PARENTESIS_A expression PARENTESIS_C
+    |DO LLAVE_A LLAVE_C WHILE PARENTESIS_A expression PARENTESIS_C;
 
 declaracion_arreglos: tipo CORCHETE_A CORCHETE_C IDENTIFICADOR IGUAL NEW tipo CORCHETE_A ENTERO CORCHETE_C P_COMA
     |tipo CORCHETE_A CORCHETE_C IDENTIFICADOR IGUAL LLAVE_A listado_datos LLAVE_C P_COMA;
@@ -215,11 +240,12 @@ acceso_listas: IDENTIFICADOR CORCHETE_A CORCHETE_A ENTERO CORCHETE_C CORCHETE_C;
 listado_datos: valor COMA listado_datos
     |valor;
 
-tipo: INT
-    |DOUBLE
-    |BOOL
-    |CHAR
-    |STRING;
+tipo: INT {$$ = sym.EnumType.int;}
+    |DOUBLE {$$ = sym.EnumType.double;}
+    |BOOL {$$ = sym.EnumType.boolean;}
+    |CHAR {$$ = sym.EnumType.char;}
+    |STRING {$$ = sym.EnumType.string;}
+;
 
 declaracion_funciones: tipo IDENTIFICADOR PARENTESIS_A parametros PARENTESIS_C LLAVE_A instrucciones LLAVE_C
     |VOID IDENTIFICADOR PARENTESIS_A parametros PARENTESIS_C LLAVE_A instrucciones LLAVE_C

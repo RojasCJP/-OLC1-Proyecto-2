@@ -1,9 +1,11 @@
+import { Instruccion } from '../tree/instruccion';
 import { Sym } from './sym';
 
 export class Enviroment {
   public table: Map<string, Sym>;
   public printList: string[];
   public previous: Enviroment | null;
+  public instructionList: Instruccion[] = [];
 
   constructor(previous: Enviroment | null) {
     this.table = new Map<string, Sym>();

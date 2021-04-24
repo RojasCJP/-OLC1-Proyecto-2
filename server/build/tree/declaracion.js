@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DeclaracionParams = void 0;
+exports.Declaration = void 0;
 const sym_1 = require("../enviroment/sym");
-class DeclaracionParams {
+class Declaration {
     constructor(id, type, value, line, column) {
         this.symResult = [];
         this.id = id;
@@ -85,4 +85,4 @@ class DeclaracionParams {
         this.value = e;
     }
 }
-exports.DeclaracionParams = DeclaracionParams;
+exports.Declaration = Declaration;

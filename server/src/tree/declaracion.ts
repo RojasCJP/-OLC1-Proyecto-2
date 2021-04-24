@@ -5,7 +5,7 @@ import { Enviroment } from '../enviroment/enviroment';
 
 export class Declaration implements Instruccion {
   public id: string;
-  private value: Expression;
+  private value: Expression | null;
   private symResult: Sym[] = [];
   private type: EnumType;
   private line: number;
@@ -14,7 +14,7 @@ export class Declaration implements Instruccion {
   constructor(
     id: string,
     type: EnumType,
-    value: Expression,
+    value: Expression | null,
     line: number,
     column: number
   ) {

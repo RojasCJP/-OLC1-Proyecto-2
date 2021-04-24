@@ -2,10 +2,16 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Enviroment = void 0;
 class Enviroment {
-    constructor() {
+    constructor(previous) {
+        this.instructionList = [];
         this.table = new Map();
         this.printList = [];
-        this.previous = new Enviroment();
+        if (previous instanceof Enviroment) {
+            this.previous = previous;
+        }
+        else {
+            this.previous = null;
+        }
     }
     getGlobal() {
         //el retorno lleva null para que se pueda mandar eso

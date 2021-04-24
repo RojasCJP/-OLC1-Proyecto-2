@@ -1,4 +1,3 @@
-import e from 'express';
 import { Enviroment } from '../enviroment/enviroment';
 import { EnumType, Sym } from '../enviroment/sym';
 import { Declaration } from './declaracion';

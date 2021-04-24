@@ -21,25 +21,40 @@ export class Expression implements Instruccion {
     type: Expression_type,
     line: number,
     column: number,
-    leftExpression?: Expression,
-    rightExpression?: Expression,
+    leftExpression: Expression | null,
+    rightExpression: Expression | null,
     value?: number | string,
     parameters?: Expression[]
   ) {
     this.type = type;
     this.line = line;
     this.column = column;
-    if (leftExpression && rightExpression) {
+    if (leftExpression != null && rightExpression != null) {
       this.leftExp = leftExpression;
       this.rightExp = rightExpression;
     }
     if (value) {
       this.value = value;
-      if (type == Expression_type.ENTERO) {
-        this.val = new Sym(EnumType.int, value);
+      switch (this.type) {
+        case Expression_type.ENTERO:
+          this.val = new Sym(EnumType.int, value);
+          break;
+        case Expression_type.DECIMAL:
+          this.val = new Sym(EnumType.double, value);
+          break;
+        case Expression_type.BOOLEAN:
+          this.val = new Sym(EnumType.boolean, value);
+          break;
+        case Expression_type.CHAR:
+          this.val = new Sym(EnumType.char, value);
+          break;
+        case Expression_type.CADENA:
+          this.val = new Sym(EnumType.string, value);
+          break;
       }
     } else {
       this.val = new Sym();
+      console.log('esto es' + this.type);
     }
     if (parameters) {
       this.parameters = parameters;
@@ -181,6 +196,18 @@ export class Expression implements Instruccion {
     this.val = new Sym(EnumType.double, result);
     return new Sym(EnumType.double, result);
   }
+  public Potencia(env: Enviroment, leftResult: Sym, rightResult: Sym): any {
+    let result: number = leftResult.value ^ rightResult.value;
+    //todo tengo que comprobar si es de enteros o de decimales
+    this.val = new Sym(EnumType.double, result);
+    return new Sym(EnumType.double, result);
+  }
+  public Modulo(env: Enviroment, leftResult: Sym, rightResult: Sym): any {
+    let result: number = leftResult.value % rightResult.value;
+    //todo tengo que comprobar si es de enteros o de decimales
+    this.val = new Sym(EnumType.double, result);
+    return new Sym(EnumType.double, result);
+  }
   public Mayor(env: Enviroment, leftResult: Sym, rightResult: Sym): any {
     let result: boolean = leftResult.value > rightResult.value;
     this.val = new Sym(EnumType.boolean, result);
@@ -253,6 +280,8 @@ export enum Expression_type {
   RESTA,
   MULTIPLICACION,
   DIVISION,
+  POTENCIA,
+  MODULO,
   MAYOR,
   MENOR,
   MAYORIGUAL,
