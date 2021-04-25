@@ -35,6 +35,7 @@ class Enviroment {
         for (env = this; env != null; env = env.previous) {
             if (env.table.has(name)) {
                 //este unefined se pone unicamente para que typescript no lo detecte como un error, al igual que el retorno
+                console.log(name);
                 let sym = env.table.get(name);
                 return sym;
             }
@@ -48,8 +49,10 @@ class Enviroment {
             if (env.table.has(name)) {
                 env.table.delete(name);
                 env.table.set(name, sym);
+                return true;
             }
         }
+        return false;
     }
     setPrevious(previeus) {
         this.previous = previeus;

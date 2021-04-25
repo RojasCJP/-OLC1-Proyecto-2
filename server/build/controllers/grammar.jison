@@ -1,7 +1,9 @@
 %{
     const controllador = require("./grammarController");
     const declaration = require("../tree/declaracion");
+    const asignation = require("../tree/asignacion")
     const exp = require("../tree/expression");
+    const iff = require("../tree/if")
     const func_call = require("../tree/function_call");
     const func = require("../tree/function");
     const inst = require("../tree/instruccion");
@@ -130,30 +132,32 @@ sentencias: LLAVE_A instrucciones LLAVE_C
 instruccion: declaracion_variables { $$ = $1 }
     |asignacion_variables { $$ = $1 }
     |actualizacion {$$ = $1 }
+    |if {$$ = $1}
     |error P_COMA { console.error('Este es un error sintáctico: ' + yytext + ', en la linea: ' + this._$.first_line + ', en la columna: ' + this._$.first_column); };
 
 expression: MENOS expression %prec UMENOS
     |PARENTESIS_A tipo PARENTESIS_C expression
-    |expression MAS expression {$$ = new exp.Expression(exp.Expression_type.SUMA, @2.first_line, @2.first_column, $1, $2);}
-    |expression MENOS expression {$$ = new exp.Expression(exp.Expression_type.RESTA, @2.first_line, @2.first_column, $1, $2);}
-    |expression MULTI expression {$$ = new exp.Expression(exp.Expression_type.MULTIPLICACION, @2.first_line, @2.first_column, $1, $2);}
-    |expression DIVISION expression {$$ = new exp.Expression(exp.Expression_type.DIVISION, @2.first_line, @2.first_column, $1, $2);} 
-    |expression POTENCIA expression {$$ = new exp.Expression(exp.Expression_type.POTENCIA, @2.first_line, @2.first_column, $1, $2);}
-    |expression MODULO expression {$$ = new exp.Expression(exp.Expression_type.MODULO, @2.first_line, @2.first_column, $1, $2);}
-    |PARENTESIS_A expression PARENTESIS_C {$$=$2;}
-    |expression AND expression {$$ = new exp.Expression(exp.Expression_type.AND, @2.first_line, @2.first_column, $1, $2);}
-    |expression OR expression {$$ = new exp.Expression(exp.Expression_type.OR, @2.first_line, @2.first_column, $1, $2);}
+    |expression MAS expression {$$ = new exp.Expression(exp.Expression_type.SUMA, @2.first_line, @2.first_column, $1, $3); console.log('llega a suma');}
+    |expression MENOS expression {$$ = new exp.Expression(exp.Expression_type.RESTA, @2.first_line, @2.first_column, $1, $3);}
+    |expression MULTI expression {$$ = new exp.Expression(exp.Expression_type.MULTIPLICACION, @2.first_line, @2.first_column, $1, $3);}
+    |expression DIVISION expression {$$ = new exp.Expression(exp.Expression_type.DIVISION, @2.first_line, @2.first_column, $1, $3);} 
+    |expression POTENCIA expression {$$ = new exp.Expression(exp.Expression_type.POTENCIA, @2.first_line, @2.first_column, $1, $3);}
+    |expression MODULO expression {$$ = new exp.Expression(exp.Expression_type.MODULO, @2.first_line, @2.first_column, $1, $3);}
+    |PARENTESIS_A expression PARENTESIS_C {$$=$2; console.log("llega a parentesis");}
+    |expression AND expression {$$ = new exp.Expression(exp.Expression_type.AND, @2.first_line, @2.first_column, $1, $3);}
+    |expression OR expression {$$ = new exp.Expression(exp.Expression_type.OR, @2.first_line, @2.first_column, $1, $3);}
     |NOT expression
-    |expression MAYOR expression {$$ = new exp.Expression(exp.Expression_type.MAYOR, @2.first_line, @2.first_column, $1, $2);}
-    |expression MENOR expression {$$ = new exp.Expression(exp.Expression_type.MENOR, @2.first_line, @2.first_column, $1, $2);}
-    |expression MAYORIGUAL expression {$$ = new exp.Expression(exp.Expression_type.MAYORIGUAL, @2.first_line, @2.first_column, $1, $2);}
-    |expression MENORIGUAL expression {$$ = new exp.Expression(exp.Expression_type.MENORIGUAL, @2.first_line, @2.first_column, $1, $2);}
-    |expression IGUALIGUAL expression {$$ = new exp.Expression(exp.Expression_type.IGUALIGUAL, @2.first_line, @2.first_column, $1, $2);}
-    |expression DIFERENTE expression {$$ = new exp.Expression(exp.Expression_type.DIFERENTE, @2.first_line, @2.first_column, $1, $2);}
+    |expression MAYOR expression {$$ = new exp.Expression(exp.Expression_type.MAYOR, @2.first_line, @2.first_column, $1, $3);}
+    |expression MENOR expression {$$ = new exp.Expression(exp.Expression_type.MENOR, @2.first_line, @2.first_column, $1, $3);}
+    |expression MAYORIGUAL expression {$$ = new exp.Expression(exp.Expression_type.MAYORIGUAL, @2.first_line, @2.first_column, $1, $3);}
+    |expression MENORIGUAL expression {$$ = new exp.Expression(exp.Expression_type.MENORIGUAL, @2.first_line, @2.first_column, $1, $3);}
+    |expression IGUALIGUAL expression {$$ = new exp.Expression(exp.Expression_type.IGUALIGUAL, @2.first_line, @2.first_column, $1, $3);}
+    |expression DIFERENTE expression {$$ = new exp.Expression(exp.Expression_type.DIFERENTE, @2.first_line, @2.first_column, $1, $3);}
     |expression MAS MAS
     |expression MENOS MENOS
+    |IDENTIFICADOR {$$ = new exp.Expression(exp.Expression_type.IDENTIFICADOR,this._$.first_line,this._$.first_column,null,null,$1)}
     |ENTERO {$$ = new exp.Expression(exp.Expression_type.ENTERO,this._$.first_line,this._$.first_column,null,null,$1);}
-    |DECIMAL {$$ = new exp.Expression(exp.Expression_type.DECIMAL,this._$.first_line,this._$.first_column,null,null,$1); console.log('hasta aquI');}
+    |DECIMAL {$$ = new exp.Expression(exp.Expression_type.DECIMAL,this._$.first_line,this._$.first_column,null,null,$1);}
     |CADENA {$$ = new exp.Expression(exp.Expression_type.CADENA,this._$.first_line,this._$.first_column,null,null,$1);}
     |CARACTER {$$ = new exp.Expression(exp.Expression_type.CHAR,this._$.first_line,this._$.first_column,null,null,$1);}
     |FALSE {$$ = new exp.Expression(exp.Expression_type.BOOLEAN,this._$.first_line,this._$.first_column,null,null,$1);}
@@ -168,17 +172,11 @@ declaracion_variables: tipo IDENTIFICADOR P_COMA {$$ = new declaration.Declarati
     |tipo IDENTIFICADOR IGUAL expression P_COMA {$$ = new declaration.Declaration($2,$1,$4,@2.first_line,@2.first_column)}
 ;
 
-asignacion_variables: IDENTIFICADOR IGUAL expression P_COMA
+asignacion_variables: IDENTIFICADOR IGUAL expression P_COMA {$$ = new asignation.Asignation($1,$3,@2.first_line,@2.first_column)}
 ;
 
-if: IF PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C
-    |IF PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C ELSE LLAVE_A instrucciones LLAVE_C
-    |IF PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C ELSE if
-    |IF PARENTESIS_A expression PARENTESIS_C LLAVE_A LLAVE_C
-    |IF PARENTESIS_A expression PARENTESIS_C LLAVE_A LLAVE_C ELSE LLAVE_A instrucciones LLAVE_C
-    |IF PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C ELSE LLAVE_A LLAVE_C
-    |IF PARENTESIS_A expression PARENTESIS_C LLAVE_A LLAVE_C ELSE LLAVE_A LLAVE_C
-    |IF PARENTESIS_A expression PARENTESIS_C LLAVE_A LLAVE_C ELSE if;
+if: IF PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C {$$ = new iff.If($3,$6,@2.first_line,@2.first_column) }
+;
 
 condicion: valor comparador valor
     |IDENTIFICADOR comparador valor

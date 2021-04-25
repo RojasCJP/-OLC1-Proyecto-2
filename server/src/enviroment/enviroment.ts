@@ -39,6 +39,7 @@ export class Enviroment {
     for (env = this; env != null; env = env.previous) {
       if (env.table.has(name)) {
         //este unefined se pone unicamente para que typescript no lo detecte como un error, al igual que el retorno
+        console.log(name);
         let sym: Sym | undefined = env.table.get(name);
         return sym;
       }
@@ -51,15 +52,17 @@ export class Enviroment {
     sym: Sym,
     line: number,
     column: number
-  ): void {
+  ): boolean {
     name = name.toLowerCase();
     let env: Enviroment | null;
     for (env = this; env != null; env = env.previous) {
       if (env.table.has(name)) {
         env.table.delete(name);
         env.table.set(name, sym);
+        return true;
       }
     }
+    return false;
   }
 
   public setPrevious(previeus: Enviroment) {

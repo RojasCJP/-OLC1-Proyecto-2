@@ -2,7 +2,7 @@ import { Enviroment } from '../enviroment/enviroment';
 import { Instruccion } from './instruccion';
 import { EnumType, Sym } from '../enviroment/sym';
 import { FunctionCall } from './function_call';
-import e from 'express';
+import { json } from 'express';
 
 export class Expression implements Instruccion {
   public parameters: Expression[] = [];
@@ -51,10 +51,11 @@ export class Expression implements Instruccion {
         case Expression_type.CADENA:
           this.val = new Sym(EnumType.string, value);
           break;
+        case Expression_type.IDENTIFICADOR:
+          this.val = new Sym(EnumType.void, value);
       }
     } else {
       this.val = new Sym();
-      console.log('esto es' + this.type);
     }
     if (parameters) {
       this.parameters = parameters;
@@ -76,7 +77,7 @@ export class Expression implements Instruccion {
     }
     if (this.rightExp != null) {
       this.rightExp.paramsResult = this.executeParams(this.rightExp, env);
-      this.rightExp = this.rightExp.execute(env);
+      rightResult = this.rightExp.execute(env);
     }
     if (this.type == Expression_type.NULO) return null;
     else
@@ -90,6 +91,10 @@ export class Expression implements Instruccion {
           return this.Multiplicacion(env, leftResult, rightResult);
         case Expression_type.DIVISION:
           return this.Division(env, leftResult, rightResult);
+        case Expression_type.POTENCIA:
+          return this.Potencia(env, leftResult, rightResult);
+        case Expression_type.MODULO:
+          return this.Modulo(env, leftResult, rightResult);
         case Expression_type.MAYOR:
           return this.Mayor(env, leftResult, rightResult);
         case Expression_type.MENOR:
@@ -109,14 +114,31 @@ export class Expression implements Instruccion {
         case Expression_type.AND:
           return this.And(env, leftResult, rightResult);
         case Expression_type.ENTERO:
+          if (!(this.val.value instanceof Number)) {
+            this.val.value = Number(this.val.value);
+          }
           return this.val;
         case Expression_type.DECIMAL:
+          if (!(this.val.value instanceof Number)) {
+            this.val.value = Number(this.val.value);
+          }
           return this.val;
         case Expression_type.CADENA:
+          this.val.value = this.val.value.substring(
+            1,
+            this.val.value.length - 1
+          );
           return this.val;
         case Expression_type.CHAR:
+          this.val.value = this.val.value.substring(
+            1,
+            this.val.value.length - 1
+          );
           return this.val;
         case Expression_type.BOOLEAN:
+          if (!(this.val.value instanceof Boolean)) {
+            this.val.value = JSON.parse(this.val.value);
+          }
           return this.val;
         case Expression_type.IDENTIFICADOR:
           return this.Identificador(env);
@@ -162,23 +184,25 @@ export class Expression implements Instruccion {
     return call.execute(env);
   }
   public Identificador(env: Enviroment): any {
-    let sym: Sym | undefined = env.search(JSON.stringify(this.val), 0, 0);
+    let sym: Sym | undefined = env.search(this.val.value, 0, 0);
+    console.log(this.val.value);
+    console.log('llego hasta aqui wi ' + sym?.value + ' ' + sym?.type);
     if (sym != undefined && sym != null) {
       this.val = new Sym(sym.type, sym.value);
       return new Sym(sym.type, sym.value);
     }
   }
   public Suma(env: Enviroment, leftResult: Sym, rightResult: Sym): any {
-    let result: number = leftResult.value + rightResult.value;
+    let result: any = leftResult.value + rightResult.value;
     //todo tengo que comprobar si es de enteros o de decimales
-    this.val = new Sym(EnumType.int, result);
-    return new Sym(EnumType.int, result);
+    this.val = new Sym(leftResult.type, result);
+    return new Sym(leftResult.type, result);
   }
   public Resta(env: Enviroment, leftResult: Sym, rightResult: Sym): any {
     let result: number = leftResult.value - rightResult.value;
     //todo tengo que comprobar si es de enteros o de decimales
-    this.val = new Sym(EnumType.int, result);
-    return new Sym(EnumType.int, result);
+    this.val = new Sym(leftResult.type, result);
+    return new Sym(leftResult.type, result);
   }
   public Multiplicacion(
     env: Enviroment,
@@ -187,8 +211,8 @@ export class Expression implements Instruccion {
   ): any {
     let result: number = leftResult.value * rightResult.value;
     //todo tengo que comprobar si es de enteros o de decimales
-    this.val = new Sym(EnumType.int, result);
-    return new Sym(EnumType.int, result);
+    this.val = new Sym(leftResult.type, result);
+    return new Sym(leftResult.type, result);
   }
   public Division(env: Enviroment, leftResult: Sym, rightResult: Sym): any {
     let result: number = leftResult.value / rightResult.value;
@@ -197,16 +221,16 @@ export class Expression implements Instruccion {
     return new Sym(EnumType.double, result);
   }
   public Potencia(env: Enviroment, leftResult: Sym, rightResult: Sym): any {
-    let result: number = leftResult.value ^ rightResult.value;
+    let result: number = Math.pow(leftResult.value, rightResult.value);
     //todo tengo que comprobar si es de enteros o de decimales
-    this.val = new Sym(EnumType.double, result);
-    return new Sym(EnumType.double, result);
+    this.val = new Sym(leftResult.type, result);
+    return new Sym(leftResult.type, result);
   }
   public Modulo(env: Enviroment, leftResult: Sym, rightResult: Sym): any {
     let result: number = leftResult.value % rightResult.value;
     //todo tengo que comprobar si es de enteros o de decimales
-    this.val = new Sym(EnumType.double, result);
-    return new Sym(EnumType.double, result);
+    this.val = new Sym(EnumType.int, result);
+    return new Sym(EnumType.int, result);
   }
   public Mayor(env: Enviroment, leftResult: Sym, rightResult: Sym): any {
     let result: boolean = leftResult.value > rightResult.value;
