@@ -1,8 +1,6 @@
 import { Response, Request } from 'express';
 import { Enviroment } from '../enviroment/enviroment';
 import { Instruccion } from '../tree/instruccion';
-import { Declaration } from '../tree/declaracion';
-import { EnumType } from '../enviroment/sym';
 class GrammarController {
   static consola: string = '';
   static errores: Error[];
@@ -18,9 +16,7 @@ class GrammarController {
     var parser = require('./grammar');
     parser.parse(req.body.codigo);
     let root: Instruccion[] = GrammarController.instructionList;
-    // todo aqui tengo que hacer que recupere la lista de instrucciones AST
     let global: Enviroment = new Enviroment(null);
-    console.log(GrammarController.instructionList);
     GrammarController.executeAST(root, global);
     console.log(global);
     console.log(GrammarController.consola);

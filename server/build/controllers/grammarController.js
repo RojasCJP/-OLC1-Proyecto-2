@@ -11,9 +11,7 @@ class GrammarController {
         var parser = require('./grammar');
         parser.parse(req.body.codigo);
         let root = GrammarController.instructionList;
-        // todo aqui tengo que hacer que recupere la lista de instrucciones AST
         let global = new enviroment_1.Enviroment(null);
-        console.log(GrammarController.instructionList);
         GrammarController.executeAST(root, global);
         console.log(global);
         console.log(GrammarController.consola);

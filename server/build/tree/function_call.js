@@ -15,22 +15,23 @@ class FunctionCall {
     execute(env) {
         let local = new enviroment_1.Enviroment(env.getGlobal());
         let fun = local.search(this.id + '%%', this.line, this.column);
-        if (fun != undefined) {
+        if (fun != undefined && fun != null) {
             let parameterIns = fun.value;
             let parameters = parameterIns.parameters;
             let instructions = parameterIns.instructions;
-            if (parameters != null) {
+            if (parameters != null && parameters != undefined) {
                 let index = 0;
                 parameters.forEach((declaration) => {
-                    let sym = new sym_1.Sym();
+                    let sym = null;
                     if (this.paramsResult != null)
                         sym = this.paramsResult[index++];
                     declaration.execute(local);
                     local.updateValue(declaration.id, sym, this.line, this.column);
                 });
             }
-            if (instructions != null) {
-                instructions.forEach((instruction) => {
+            if (instructions != null && instructions != undefined) {
+                for (let j = 0; j < instructions.length; j++) {
+                    let instruction = instructions[j];
                     if (instruction instanceof FunctionCall) {
                         let call = instruction;
                         call.paramsResult = this.executeParamsParams(call.parametersExpressions, local);
@@ -49,14 +50,15 @@ class FunctionCall {
                                 return sym;
                         }
                     } // agregar validaciones, ahorita es solo de funciones, falta para metodos
-                });
+                }
                 return new sym_1.Sym(sym_1.EnumType.error, '@Error');
             }
         }
+        return null;
     }
     executeParamsParams(parameters, env) {
         let params = [];
-        if (parameters != null) {
+        if (parameters != null && parameters != undefined) {
             for (let i = 0; i < parameters.length; i++) {
                 let exp = parameters[i];
                 exp.paramsResult = this.executeParamsExpression(exp, env);
@@ -77,9 +79,9 @@ class FunctionCall {
     executeParamsExpression(expression, env) {
         let paramsResultt = null;
         if (expression != null &&
-            env != null &&
+            expression.parameters != null &&
             expression != undefined &&
-            env != undefined) {
+            expression.parameters != undefined) {
             paramsResultt = [];
             for (let i = 0; i < expression.parameters.length; i++) {
                 let exp = expression.parameters[i];

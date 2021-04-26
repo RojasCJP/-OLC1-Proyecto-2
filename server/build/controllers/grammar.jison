@@ -8,7 +8,8 @@
     const func = require("../tree/function");
     const inst = require("../tree/instruccion");
     const paramsIns = require("../tree/parametersIns");
-    const sym = require("../enviroment/sym")
+    const sym = require("../enviroment/sym");
+    const returnn = require("../tree/return");
     var err;
     var instructionList = controllador.GrammarController.instructionList;
 %}
@@ -133,6 +134,8 @@ instruccion: declaracion_variables { $$ = $1 }
     |asignacion_variables { $$ = $1 }
     |actualizacion {$$ = $1 }
     |if {$$ = $1}
+    |function {$$ = $1}
+    |RETURN expression P_COMA {$$ = new returnn.Return($2,@2.first_line,@2.first_column);}
     |error P_COMA { console.error('Este es un error sintáctico: ' + yytext + ', en la linea: ' + this._$.first_line + ', en la columna: ' + this._$.first_column); };
 
 expression: MENOS expression %prec UMENOS
@@ -155,115 +158,65 @@ expression: MENOS expression %prec UMENOS
     |expression DIFERENTE expression {$$ = new exp.Expression(exp.Expression_type.DIFERENTE, @2.first_line, @2.first_column, $1, $3);}
     |expression MAS MAS
     |expression MENOS MENOS
-    |IDENTIFICADOR {$$ = new exp.Expression(exp.Expression_type.IDENTIFICADOR,this._$.first_line,this._$.first_column,null,null,$1)}
     |ENTERO {$$ = new exp.Expression(exp.Expression_type.ENTERO,this._$.first_line,this._$.first_column,null,null,$1);}
     |DECIMAL {$$ = new exp.Expression(exp.Expression_type.DECIMAL,this._$.first_line,this._$.first_column,null,null,$1);}
     |CADENA {$$ = new exp.Expression(exp.Expression_type.CADENA,this._$.first_line,this._$.first_column,null,null,$1);}
     |CARACTER {$$ = new exp.Expression(exp.Expression_type.CHAR,this._$.first_line,this._$.first_column,null,null,$1);}
     |FALSE {$$ = new exp.Expression(exp.Expression_type.BOOLEAN,this._$.first_line,this._$.first_column,null,null,$1);}
     |TRUE {$$ = new exp.Expression(exp.Expression_type.BOOLEAN,this._$.first_line,this._$.first_column,null,null,$1);}
+    |IDENTIFICADOR {$$ = new exp.Expression(exp.Expression_type.IDENTIFICADOR,this._$.first_line,this._$.first_column,null,null,$1);}
+    |function_call {$$ = new exp.Expression(exp.Expression_type.FUNCION,this._$.first_line,this._$.first_column,null,null,$1.id,$1.parametersExpressions);}
 ;
 
 actualizacion: incremento
     |decremento
 ;
 
-declaracion_variables: tipo IDENTIFICADOR P_COMA {$$ = new declaration.Declaration($2,$1,null,@2.first_line,@2.first_column)}
-    |tipo IDENTIFICADOR IGUAL expression P_COMA {$$ = new declaration.Declaration($2,$1,$4,@2.first_line,@2.first_column)}
+declaracion_variables: tipo IDENTIFICADOR P_COMA {$$ = new declaration.Declaration($2,$1,null,@2.first_line,@2.first_column);}
+    |tipo IDENTIFICADOR IGUAL expression P_COMA {$$ = new declaration.Declaration($2,$1,$4,@2.first_line,@2.first_column);}
 ;
 
-asignacion_variables: IDENTIFICADOR IGUAL expression P_COMA {$$ = new asignation.Asignation($1,$3,@2.first_line,@2.first_column)}
+asignacion_variables: IDENTIFICADOR IGUAL expression P_COMA {$$ = new asignation.Asignation($1,$3,@2.first_line,@2.first_column);}
 ;
 
-if: IF PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C {$$ = new iff.If($3,$6,@2.first_line,@2.first_column) }
+if: IF PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C {$$ = new iff.If($3,$6,@2.first_line,@2.first_column) ;}
 ;
 
-condicion: valor comparador valor
-    |IDENTIFICADOR comparador valor
-    |valor comparador IDENTIFICADOR
-    |IDENTIFICADOR comparador IDENTIFICADOR
-    |valor;
+function: tipo IDENTIFICADOR PARENTESIS_A parametros PARENTESIS_C LLAVE_A instrucciones LLAVE_C {$$ = new func.Function($2,$1,$7,$4,@2.first_line,@2.first_column);}
+;
 
-booleano: TRUE
-    |FALSE;
+function_call: IDENTIFICADOR PARENTESIS_A PARENTESIS_C {$$ = new func_call.FunctionCall($1,null,@2.first_line,@2.first_column);}
+    |IDENTIFICADOR PARENTESIS_A params_value PARENTESIS_C {$$ = new func_call.FunctionCall($1,$3,@2.first_line,@2.first_column);}
+;
 
-comparador: IGUALIGUAL
-    |DIFERENTE
-    |MENOR
-    |MENORIGUAL
-    |MAYOR
-    |MAYORIGUAL;
+parametros: parametros COMA tipo IDENTIFICADOR
+    {
+        $$ = $1;
+        $$.push(new declaration.Declaration($4,$3,null,@2.first_line,@2.first_column));
+    }
+    |tipo IDENTIFICADOR
+    {
+        $$ = [];
+        $$.push(new declaration.Declaration($2,$1,null,@2.first_line,@2.first_column));
+    }
+;
 
-switch: SWITCH PARENTESIS_A IDENTIFICADOR PARENTESIS_C LLAVE_A cases LLAVE_C;
-
-cases: case cases
-    |case
-    |default;
-
-case: CASE valor DOSPUNTOS instrucciones
-    |CASE valor DOSPUNTOS instrucciones BREAK P_COMA
-    |CASE valor DOSPUNTOS
-    |CASE valor DOSPUNTOS BREAK P_COMA;
-
-default: DEFAULT DOSPUNTOS instrucciones
-    |DEFAULT DOSPUNTOS instrucciones BREAK P_COMA
-    |DEFAULT DOSPUNTOS
-    |DEFAULT DOSPUNTOS BREAK P_COMA;
-
-
-while: WHILE PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C
-    |WHILE PARENTESIS_A expression PARENTESIS_C LLAVE_A LLAVE_C;
-
-for: FOR PARENTESIS_A declaracion_variables expression P_COMA actualizacion PARENTESIS_C LLAVE_A instrucciones LLAVE_C
-    |FOR PARENTESIS_A asignacion_variables expression P_COMA actualizacion PARENTESIS_C LLAVE_A instrucciones LLAVE_C
-    |FOR PARENTESIS_A declaracion_variables expression P_COMA actualizacion PARENTESIS_C LLAVE_A LLAVE_C
-    |FOR PARENTESIS_A asignacion_variables expression P_COMA actualizacion PARENTESIS_C LLAVE_A LLAVE_C;
-
-dowhile: DO LLAVE_A instrucciones LLAVE_C WHILE PARENTESIS_A expression PARENTESIS_C
-    |DO LLAVE_A LLAVE_C WHILE PARENTESIS_A expression PARENTESIS_C;
-
-declaracion_arreglos: tipo CORCHETE_A CORCHETE_C IDENTIFICADOR IGUAL NEW tipo CORCHETE_A ENTERO CORCHETE_C P_COMA
-    |tipo CORCHETE_A CORCHETE_C IDENTIFICADOR IGUAL LLAVE_A listado_datos LLAVE_C P_COMA;
-
-asignacion_arreglos: acceso_arreglos IGUAL valor P_COMA;
-
-declaracion_listas: LIST MENOR tipo MAYOR IDENTIFICADOR IGUAL NEW LIST MENOR tipo MAYOR P_COMA;
-
-asignacion_listas: acceso_listas IGUAL valor P_COMA;
-
-acceso_arreglos: IDENTIFICADOR CORCHETE_A ENTERO CORCHETE_C;
-
-acceso_listas: IDENTIFICADOR CORCHETE_A CORCHETE_A ENTERO CORCHETE_C CORCHETE_C;
-
-listado_datos: valor COMA listado_datos
-    |valor;
+params_value: params_value COMA expression
+    {
+        $$ = $1;
+        $$.push($3);
+    }
+    |expression
+    {
+        $$ = [];
+        $$.push($1);
+    }
+;
 
 tipo: INT {$$ = sym.EnumType.int;}
     |DOUBLE {$$ = sym.EnumType.double;}
     |BOOL {$$ = sym.EnumType.boolean;}
     |CHAR {$$ = sym.EnumType.char;}
     |STRING {$$ = sym.EnumType.string;}
+    |VOID {$$ = sym.EnumType.void}
 ;
-
-declaracion_funciones: tipo IDENTIFICADOR PARENTESIS_A parametros PARENTESIS_C LLAVE_A instrucciones LLAVE_C
-    |VOID IDENTIFICADOR PARENTESIS_A parametros PARENTESIS_C LLAVE_A instrucciones LLAVE_C
-    |tipo IDENTIFICADOR PARENTESIS_A parametros PARENTESIS_C LLAVE_A LLAVE_C
-    |VOID IDENTIFICADOR PARENTESIS_A parametros PARENTESIS_C LLAVE_A LLAVE_C;
-
-print: PRINT PARENTESIS_A valor PARENTESIS_C P_COMA{console.log("print");};
-
-llamada_funciones: IDENTIFICADOR PARENTESIS_A valores PARENTESIS_C P_COMA;
-
-parametros: parametro COMA parametros
-    |parametro
-    |;
-
-parametro: tipo IDENTIFICADOR;
-
-valores: valor COMA valores
-    |valor
-    |;
-
-incremento: IDENTIFICADOR MAS MAS;
-
-decremento: IDENTIFICADOR MENOS MENOS;

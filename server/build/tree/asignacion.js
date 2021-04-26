@@ -23,6 +23,9 @@ class Asignation {
             case expression_1.Expression_type.BOOLEAN:
                 this.type = sym_1.EnumType.boolean;
                 break;
+            case expression_1.Expression_type.IDENTIFICADOR:
+                this.type = sym_1.EnumType.funcion;
+                break;
             default:
                 this.type = sym_1.EnumType.void;
                 break;
@@ -34,10 +37,14 @@ class Asignation {
         if (this.value != null || this.value != undefined) {
             this.value.paramsResult = this.executeParams(this.value, env);
             let valueResult = this.value.execute(env);
-            if (valueResult.type == this.type) {
+            if (valueResult.type == this.type ||
+                this.type == sym_1.EnumType.funcion ||
+                this.type == sym_1.EnumType.void) {
                 let sym = new sym_1.Sym(valueResult.type, valueResult.value);
                 let variable = env.search(this.id, 0, 0);
-                if ((variable === null || variable === void 0 ? void 0 : variable.type) == this.type) {
+                if ((variable === null || variable === void 0 ? void 0 : variable.type) == this.type ||
+                    this.type == sym_1.EnumType.funcion ||
+                    this.type == sym_1.EnumType.void) {
                     let insert = env.updateValue(this.id, sym, this.line, this.column);
                     if (insert)
                         console.log('se actualizo la variable adecuadamente');

@@ -160,13 +160,18 @@ class Expression {
         return call.execute(env);
     }
     Identificador(env) {
-        let sym = env.search(this.val.value, 0, 0);
-        console.log(this.val.value);
-        console.log('llego hasta aqui wi ' + (sym === null || sym === void 0 ? void 0 : sym.value) + ' ' + (sym === null || sym === void 0 ? void 0 : sym.type));
+        let sym;
+        if (this.type == Expression_type.IDENTIFICADOR) {
+            sym = env.search(this.value, 0, 0);
+        }
+        else {
+            sym = env.search(this.val.value, 0, 0);
+        }
         if (sym != undefined && sym != null) {
             this.val = new sym_1.Sym(sym.type, sym.value);
             return new sym_1.Sym(sym.type, sym.value);
         }
+        return new sym_1.Sym(sym_1.EnumType.error, '@error');
     }
     Suma(env, leftResult, rightResult) {
         let result = leftResult.value + rightResult.value;

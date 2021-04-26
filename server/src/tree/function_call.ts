@@ -1,5 +1,6 @@
 import { Enviroment } from '../enviroment/enviroment';
 import { EnumType, Sym } from '../enviroment/sym';
+import indexRoutes from '../routes/indexRoutes';
 import { Declaration } from './declaracion';
 import { Expression } from './expression';
 import { Instruccion } from './instruccion';
@@ -24,28 +25,29 @@ export class FunctionCall implements Instruccion {
     this.column = column;
   }
 
-  execute(env: Enviroment): Sym | undefined {
+  execute(env: Enviroment): Sym | null {
     let local: Enviroment = new Enviroment(env.getGlobal());
     let fun: Sym | undefined = local.search(
       this.id + '%%',
       this.line,
       this.column
     );
-    if (fun != undefined) {
+    if (fun != undefined && fun != null) {
       let parameterIns: ParametersIns = fun.value;
       let parameters: Declaration[] | null = parameterIns.parameters;
       let instructions: Instruccion[] = parameterIns.instructions;
-      if (parameters != null) {
+      if (parameters != null && parameters != undefined) {
         let index: number = 0;
         parameters.forEach((declaration) => {
-          let sym: Sym = new Sym();
+          let sym: Sym | null = null;
           if (this.paramsResult != null) sym = this.paramsResult[index++];
           declaration.execute(local);
           local.updateValue(declaration.id, sym, this.line, this.column);
         });
       }
-      if (instructions != null) {
-        instructions.forEach((instruction) => {
+      if (instructions != null && instructions != undefined) {
+        for (let j = 0; j < instructions.length; j++) {
+          let instruction: Instruccion = instructions[j];
           if (instruction instanceof FunctionCall) {
             let call: FunctionCall = instruction;
             call.paramsResult = this.executeParamsParams(
@@ -68,10 +70,11 @@ export class FunctionCall implements Instruccion {
               if (sym.breturn) return sym;
             }
           } // agregar validaciones, ahorita es solo de funciones, falta para metodos
-        });
+        }
         return new Sym(EnumType.error, '@Error');
       }
     }
+    return null;
   }
 
   public executeParamsParams(
@@ -79,7 +82,7 @@ export class FunctionCall implements Instruccion {
     env: Enviroment
   ): Sym[] | null {
     let params: Sym[] = [];
-    if (parameters != null) {
+    if (parameters != null && parameters != undefined) {
       for (let i = 0; i < parameters.length; i++) {
         let exp: Expression = parameters[i];
         exp.paramsResult = this.executeParamsExpression(exp, env);
@@ -101,9 +104,9 @@ export class FunctionCall implements Instruccion {
     let paramsResultt: Sym[] | null = null;
     if (
       expression != null &&
-      env != null &&
+      expression.parameters != null &&
       expression != undefined &&
-      env != undefined
+      expression.parameters != undefined
     ) {
       paramsResultt = [];
       for (let i = 0; i < expression.parameters.length; i++) {

@@ -29,6 +29,9 @@ export class Asignation implements Instruccion {
       case Expression_type.BOOLEAN:
         this.type = EnumType.boolean;
         break;
+      case Expression_type.IDENTIFICADOR:
+        this.type = EnumType.funcion;
+        break;
       default:
         this.type = EnumType.void;
         break;
@@ -41,10 +44,19 @@ export class Asignation implements Instruccion {
     if (this.value != null || this.value != undefined) {
       this.value.paramsResult = this.executeParams(this.value, env);
       let valueResult: Sym = this.value.execute(env);
-      if (valueResult.type == this.type) {
+
+      if (
+        valueResult.type == this.type ||
+        this.type == EnumType.funcion ||
+        this.type == EnumType.void
+      ) {
         let sym: Sym = new Sym(valueResult.type, valueResult.value);
         let variable: Sym | undefined = env.search(this.id, 0, 0);
-        if (variable?.type == this.type) {
+        if (
+          variable?.type == this.type ||
+          this.type == EnumType.funcion ||
+          this.type == EnumType.void
+        ) {
           let insert: boolean = env.updateValue(
             this.id,
             sym,

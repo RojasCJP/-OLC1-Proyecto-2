@@ -184,13 +184,17 @@ export class Expression implements Instruccion {
     return call.execute(env);
   }
   public Identificador(env: Enviroment): any {
-    let sym: Sym | undefined = env.search(this.val.value, 0, 0);
-    console.log(this.val.value);
-    console.log('llego hasta aqui wi ' + sym?.value + ' ' + sym?.type);
+    let sym: Sym | undefined;
+    if (this.type == Expression_type.IDENTIFICADOR) {
+      sym = env.search(this.value, 0, 0);
+    } else {
+      sym = env.search(this.val.value, 0, 0);
+    }
     if (sym != undefined && sym != null) {
       this.val = new Sym(sym.type, sym.value);
       return new Sym(sym.type, sym.value);
     }
+    return new Sym(EnumType.error, '@error');
   }
   public Suma(env: Enviroment, leftResult: Sym, rightResult: Sym): any {
     let result: any = leftResult.value + rightResult.value;

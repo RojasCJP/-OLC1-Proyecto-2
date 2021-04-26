@@ -25,6 +25,7 @@ export enum EnumType {
   boolean,
   string,
   char,
+  funcion,
   void,
   error,
 }
