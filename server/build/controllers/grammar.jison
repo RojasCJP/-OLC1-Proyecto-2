@@ -10,6 +10,7 @@
     const paramsIns = require("../tree/parametersIns");
     const sym = require("../enviroment/sym");
     const returnn = require("../tree/return");
+    const listIf=require("../tree/list_if");
     var err;
     var instructionList = controllador.GrammarController.instructionList;
 %}
@@ -133,8 +134,9 @@ sentencias: LLAVE_A instrucciones LLAVE_C
 instruccion: declaracion_variables { $$ = $1 }
     |asignacion_variables { $$ = $1 }
     |actualizacion {$$ = $1 }
-    |if {$$ = $1}
+    |else_if {$$ = new listIf.ListIf(this._$.first_line,this._$.first_column,$1);}
     |function {$$ = $1}
+    |function_call P_COMA {$$ = $1}
     |RETURN expression P_COMA {$$ = new returnn.Return($2,@2.first_line,@2.first_column);}
     |error P_COMA { console.error('Este es un error sintáctico: ' + yytext + ', en la linea: ' + this._$.first_line + ', en la columna: ' + this._$.first_column); };
 
@@ -149,7 +151,7 @@ expression: MENOS expression %prec UMENOS
     |PARENTESIS_A expression PARENTESIS_C {$$=$2; console.log("llega a parentesis");}
     |expression AND expression {$$ = new exp.Expression(exp.Expression_type.AND, @2.first_line, @2.first_column, $1, $3);}
     |expression OR expression {$$ = new exp.Expression(exp.Expression_type.OR, @2.first_line, @2.first_column, $1, $3);}
-    |NOT expression
+    |NOT expression {$$ = new exp.Expression(exp.Expression_type.NOT,@2.first_line,@2.first_column,$2,$2);}
     |expression MAYOR expression {$$ = new exp.Expression(exp.Expression_type.MAYOR, @2.first_line, @2.first_column, $1, $3);}
     |expression MENOR expression {$$ = new exp.Expression(exp.Expression_type.MENOR, @2.first_line, @2.first_column, $1, $3);}
     |expression MAYORIGUAL expression {$$ = new exp.Expression(exp.Expression_type.MAYORIGUAL, @2.first_line, @2.first_column, $1, $3);}
@@ -182,7 +184,22 @@ asignacion_variables: IDENTIFICADOR IGUAL expression P_COMA {$$ = new asignation
 if: IF PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C {$$ = new iff.If($3,$6,@2.first_line,@2.first_column) ;}
 ;
 
+if_else: IF PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C else {};
+
+else_if: else_if ELSE if
+    {
+        $$ = $1;
+        $$.push($3);
+    }
+    |if
+    {
+        $$ =[];
+        $$.push($1);
+    }
+;
+
 function: tipo IDENTIFICADOR PARENTESIS_A parametros PARENTESIS_C LLAVE_A instrucciones LLAVE_C {$$ = new func.Function($2,$1,$7,$4,@2.first_line,@2.first_column);}
+    |tipo IDENTIFICADOR PARENTESIS_A PARENTESIS_C LLAVE_A instrucciones LLAVE_C {$$ = new func.Function($2,$1,$6,null,@2.first_line,@2.first_column);}
 ;
 
 function_call: IDENTIFICADOR PARENTESIS_A PARENTESIS_C {$$ = new func_call.FunctionCall($1,null,@2.first_line,@2.first_column);}

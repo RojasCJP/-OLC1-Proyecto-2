@@ -7,7 +7,7 @@ import { Instruccion } from './instruccion';
 import { ParametersIns } from './parametersIns';
 
 export class FunctionCall implements Instruccion {
-  public parametersExpressions: Expression[];
+  public parametersExpressions: Expression[] | null;
   public paramsResult: Sym[] | null = [];
   public line: number;
   public column: number;
@@ -15,7 +15,7 @@ export class FunctionCall implements Instruccion {
 
   constructor(
     id: string,
-    parametersExpression: Expression[],
+    parametersExpression: Expression[] | null,
     line: number,
     column: number
   ) {
@@ -50,10 +50,12 @@ export class FunctionCall implements Instruccion {
           let instruction: Instruccion = instructions[j];
           if (instruction instanceof FunctionCall) {
             let call: FunctionCall = instruction;
-            call.paramsResult = this.executeParamsParams(
-              call.parametersExpressions,
-              local
-            );
+            if (call.paramsResult != null) {
+              call.paramsResult = this.executeParamsParams(
+                call.parametersExpressions,
+                local
+              );
+            }
             instruction = call;
           } else if (instruction instanceof Expression) {
             let expression: Expression = instruction;
@@ -63,6 +65,8 @@ export class FunctionCall implements Instruccion {
             );
             instruction = expression;
           }
+          console.log(instruction);
+          console.log('esta es la instruccion');
           let result: any = instruction.execute(local);
           if (result != null && result != undefined) {
             if (result instanceof Sym && !(instruction instanceof Expression)) {
@@ -78,7 +82,7 @@ export class FunctionCall implements Instruccion {
   }
 
   public executeParamsParams(
-    parameters: Expression[],
+    parameters: Expression[] | null,
     env: Enviroment
   ): Sym[] | null {
     let params: Sym[] = [];

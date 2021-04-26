@@ -63,7 +63,10 @@ export class If implements Instruccion {
     return null;
   }
 
-  public executeParamsParams(parameters: Expression[], env: Enviroment): Sym[] {
+  public executeParamsParams(
+    parameters: Expression[] | null,
+    env: Enviroment
+  ): Sym[] {
     let params: Sym[] = [];
     if (parameters != null && parameters != undefined) {
       for (let i = 0; i < parameters.length; i++) {
