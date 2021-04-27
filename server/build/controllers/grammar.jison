@@ -10,7 +10,8 @@
     const paramsIns = require("../tree/parametersIns");
     const sym = require("../enviroment/sym");
     const returnn = require("../tree/return");
-    const listIf=require("../tree/list_if");
+    const listIf = require("../tree/list_if");
+    const print = require("../tree/print");
     var err;
     var instructionList = controllador.GrammarController.instructionList;
 %}
@@ -134,6 +135,7 @@ sentencias: LLAVE_A instrucciones LLAVE_C
 instruccion: declaracion_variables { $$ = $1 }
     |asignacion_variables { $$ = $1 }
     |actualizacion {$$ = $1 }
+    |print_ P_COMA {$$ = $1}
     |else_if {$$ = new listIf.ListIf(this._$.first_line,this._$.first_column,$1);}
     |function {$$ = $1}
     |function_call P_COMA {$$ = $1}
@@ -183,8 +185,6 @@ asignacion_variables: IDENTIFICADOR IGUAL expression P_COMA {$$ = new asignation
 
 if: IF PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C {$$ = new iff.If($3,$6,@2.first_line,@2.first_column) ;}
 ;
-
-if_else: IF PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C else {};
 
 else_if: else_if ELSE if
     {
@@ -237,3 +237,5 @@ tipo: INT {$$ = sym.EnumType.int;}
     |STRING {$$ = sym.EnumType.string;}
     |VOID {$$ = sym.EnumType.void}
 ;
+
+print_: PRINT PARENTESIS_A expression PARENTESIS_C {$$ = new print.Print($3,@2.first_line,@2.first_column);};
