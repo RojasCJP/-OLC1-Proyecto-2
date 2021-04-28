@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Enviroment = void 0;
+const grammarController_1 = require("../controllers/grammarController");
 class Enviroment {
     constructor(previous) {
         this.instructionList = [];
@@ -9,7 +10,6 @@ class Enviroment {
         this.previous = previous;
     }
     getGlobal() {
-        //el retorno lleva null para que se pueda mandar eso
         let env;
         for (env = this; env != null; env = env.previous) {
             if (env.previous == null)
@@ -18,6 +18,10 @@ class Enviroment {
         return null;
     }
     insert(name, sym, line, column) {
+        console.log(name, sym);
+        let symbolo = { name: name, sym: sym, linea: line, columna: column };
+        grammarController_1.GrammarController.symbolos.push(symbolo);
+        //todo con esta linea tengo que hacer el reporte de variables
         name = name.toLowerCase();
         if (this.table.has(name))
             return false;
@@ -29,7 +33,6 @@ class Enviroment {
         let env;
         for (env = this; env != null; env = env.previous) {
             if (env.table.has(name)) {
-                //este unefined se pone unicamente para que typescript no lo detecte como un error, al igual que el retorno
                 let sym = env.table.get(name);
                 return sym;
             }

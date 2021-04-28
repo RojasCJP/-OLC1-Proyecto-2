@@ -13,8 +13,11 @@ class GrammarRoutes {
 
     this.router.get('/', grammarController.levantado);
 
-    //todo aqui tengo que mandar de req el codigo y de res tengo que mandar lo de consola
     this.router.post('/analizar', grammarController.lector);
+
+    this.router.get('/errores', grammarController.errores);
+
+    this.router.get('/sym', grammarController.symbolos);
   }
 }
 

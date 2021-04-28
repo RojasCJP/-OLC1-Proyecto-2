@@ -15,9 +15,17 @@ class GrammarController {
         GrammarController.executeAST(root, global);
         console.log(global);
         console.log(GrammarController.consola);
-        // todo aqui tengo que cambiar codigo por consola en el json
+        console.log(JSON.stringify(root));
+        // todo con esta linea tengo que hacer el reporte ast
+        //todo todavia tengo que hacer el reporte de errores
         res.json({ codigo: GrammarController.consola });
         GrammarController.consola = '';
+    }
+    errores(req, res) {
+        res.json(GrammarController.errores);
+    }
+    symbolos(req, res) {
+        res.json(GrammarController.symbolos);
     }
     static executeAST(root, global) {
         if (root != null && root != undefined) {
@@ -32,5 +40,7 @@ class GrammarController {
 }
 exports.GrammarController = GrammarController;
 GrammarController.consola = '';
+GrammarController.errores = [];
+GrammarController.symbolos = [];
 GrammarController.instructionList = [];
 exports.grammarController = new GrammarController();

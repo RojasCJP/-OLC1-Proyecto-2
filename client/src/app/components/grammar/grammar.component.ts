@@ -13,7 +13,9 @@ export class GrammarComponent implements OnInit {
   consola: string = "";
   constructor(private grammarService: GrammarService) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    localStorage.setItem("reportes", "no reportes");
+  }
 
   compile(): void {
     this.codigoJson.codigo = this.codigo;

@@ -99,7 +99,10 @@ case 3:
     
 break;
 case 6:
-console.log('Este es un error sintáctico: ' + yytext + ', en la linea: ' + this._$.first_line + ', en la columna: ' + this._$.first_column);
+
+        err = {tipo:"sintactico", mensaje:"se recupero en "+yytext, linea:this._$.first_line, columna:this._$.first_column};
+        controllador.GrammarController.errores.push(err);
+        
 break;
 case 7: case 8:
  this.$ = $$[$0] 
@@ -120,7 +123,11 @@ case 14:
 this.$ = new returnn.Return($$[$0-1],_$[$0-1].first_line,_$[$0-1].first_column);
 break;
 case 15:
- console.error('Este es un error sintáctico: ' + yytext + ', en la linea: ' + this._$.first_line + ', en la columna: ' + this._$.first_column); 
+
+        err = {tipo:"sintactico", mensaje:"se recupero en "+yytext, linea:this._$.first_line, columna:this._$.first_column};
+        controllador.GrammarController.errores.push(err);
+         console.error('Este es un error sintáctico: ' + yytext + ', en la linea: ' + this._$.first_line + ', en la columna: ' + this._$.first_column); 
+         
 break;
 case 18:
 this.$ = new exp.Expression(exp.Expression_type.SUMA, _$[$0-1].first_line, _$[$0-1].first_column, $$[$0-2], $$[$0]); console.log('llega a suma');

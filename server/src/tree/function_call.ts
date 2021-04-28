@@ -65,8 +65,6 @@ export class FunctionCall implements Instruccion {
             );
             instruction = expression;
           }
-          console.log(instruction);
-          console.log('esta es la instruccion');
           let result: any = instruction.execute(local);
           if (result != null && result != undefined) {
             if (result instanceof Sym && !(instruction instanceof Expression)) {

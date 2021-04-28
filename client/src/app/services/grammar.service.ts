@@ -14,4 +14,12 @@ export class GrammarService {
   compile(codigo: Codigo): Observable<any> {
     return this.http.post(`${this.API_URL}/grammar/analizar`, codigo);
   }
+
+  errors(): Observable<any> {
+    return this.http.get(`${this.API_URL}/grammar/errores`);
+  }
+
+  symbols(): Observable<any> {
+    return this.http.get(`${this.API_URL}/grammar/sym`);
+  }
 }

@@ -10,8 +10,9 @@ class GrammarRoutes {
     config() {
         //url PORT/grammar/
         this.router.get('/', grammarController_1.grammarController.levantado);
-        //todo aqui tengo que mandar de req el codigo y de res tengo que mandar lo de consola
         this.router.post('/analizar', grammarController_1.grammarController.lector);
+        this.router.get('/errores', grammarController_1.grammarController.errores);
+        this.router.get('/sym', grammarController_1.grammarController.symbolos);
     }
 }
 const grammarRoutes = new GrammarRoutes();

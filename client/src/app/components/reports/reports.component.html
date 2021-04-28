@@ -1,0 +1,45 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Tipo de Error</th>
+      <th scope="col">Descripcion</th>
+      <th scope="col">Linea</th>
+      <th scope="col">Columna</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let variable of errores">
+      <th scope="col">1</th>
+      <th scope="col">{{ variable.tipo }}</th>
+      <th scope="col">{{ variable.mensaje }}</th>
+      <th scope="col">{{ variable.linea }}</th>
+      <th scope="col">{{ variable.columna }}</th>
+    </tr>
+  </tbody>
+</table>
+
+<br /><br />
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Identificador</th>
+      <th scope="col">Tipo</th>
+      <th scope="col">Retorno</th>
+      <th scope="col">Linea</th>
+      <th scope="col">Columna</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let variable of symbolos">
+      <th scope="col">{{ variable.name }}</th>
+      <th scope="col">{{ variable.sym.type }}</th>
+      <th scope="col">{{ variable.sym.breturn }}</th>
+      <th scope="col">{{ variable.linea }}</th>
+      <th scope="col">{{ variable.columna }}</th>
+    </tr>
+  </tbody>
+</table>
+
+<br /><br />

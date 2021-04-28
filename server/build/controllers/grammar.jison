@@ -96,7 +96,10 @@
 
 <<EOF>>              return 'EOF';
 
-.  { console.error('Este es un error léxico: ' + yytext + ', en la linea: ' + yylloc.first_line + ', en la columna: ' + yylloc.first_column); }
+.  { 
+    err = {tipo:"lexico", mensaje:"se recupero en "+yytext, linea:this._$.first_line, columna:this._$.first_column};
+        controllador.GrammarController.errores.push(err);
+    console.error('Este es un error léxico: ' + yytext + ', en la linea: ' + yylloc.first_line + ', en la columna: ' + yylloc.first_column); }
 
 /lex
 
@@ -129,7 +132,10 @@ instrucciones: instrucciones instruccion {
 
 sentencias: LLAVE_A instrucciones LLAVE_C
     |LLAVE_A LLAVE_C
-    |error LLAVE_C {console.log('Este es un error sintáctico: ' + yytext + ', en la linea: ' + this._$.first_line + ', en la columna: ' + this._$.first_column);}
+    |error LLAVE_C {
+        err = {tipo:"sintactico", mensaje:"se recupero en "+yytext, linea:this._$.first_line, columna:this._$.first_column};
+        controllador.GrammarController.errores.push(err);
+        }
 ;
 
 instruccion: declaracion_variables { $$ = $1 }
@@ -140,7 +146,11 @@ instruccion: declaracion_variables { $$ = $1 }
     |function {$$ = $1}
     |function_call P_COMA {$$ = $1}
     |RETURN expression P_COMA {$$ = new returnn.Return($2,@2.first_line,@2.first_column);}
-    |error P_COMA { console.error('Este es un error sintáctico: ' + yytext + ', en la linea: ' + this._$.first_line + ', en la columna: ' + this._$.first_column); };
+    |error P_COMA {
+        err = {tipo:"sintactico", mensaje:"se recupero en "+yytext, linea:this._$.first_line, columna:this._$.first_column};
+        controllador.GrammarController.errores.push(err);
+         console.error('Este es un error sintáctico: ' + yytext + ', en la linea: ' + this._$.first_line + ', en la columna: ' + this._$.first_column); 
+         };
 
 expression: MENOS expression %prec UMENOS
     |PARENTESIS_A tipo PARENTESIS_C expression

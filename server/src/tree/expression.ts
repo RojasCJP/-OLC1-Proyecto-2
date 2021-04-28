@@ -82,7 +82,6 @@ export class Expression implements Instruccion {
     if (this.type == Expression_type.NULO) return null;
     else
       switch (this.type) {
-        // todo tengo que hacer el de negado
         case Expression_type.SUMA:
           return this.Suma(env, leftResult, rightResult);
         case Expression_type.RESTA:
@@ -198,13 +197,11 @@ export class Expression implements Instruccion {
   }
   public Suma(env: Enviroment, leftResult: Sym, rightResult: Sym): any {
     let result: any = leftResult.value + rightResult.value;
-    //todo tengo que comprobar si es de enteros o de decimales
     this.val = new Sym(leftResult.type, result);
     return new Sym(leftResult.type, result);
   }
   public Resta(env: Enviroment, leftResult: Sym, rightResult: Sym): any {
     let result: number = leftResult.value - rightResult.value;
-    //todo tengo que comprobar si es de enteros o de decimales
     this.val = new Sym(leftResult.type, result);
     return new Sym(leftResult.type, result);
   }
@@ -214,25 +211,21 @@ export class Expression implements Instruccion {
     rightResult: Sym
   ): any {
     let result: number = leftResult.value * rightResult.value;
-    //todo tengo que comprobar si es de enteros o de decimales
     this.val = new Sym(leftResult.type, result);
     return new Sym(leftResult.type, result);
   }
   public Division(env: Enviroment, leftResult: Sym, rightResult: Sym): any {
     let result: number = leftResult.value / rightResult.value;
-    //todo tengo que comprobar si es de enteros o de decimales
     this.val = new Sym(EnumType.double, result);
     return new Sym(EnumType.double, result);
   }
   public Potencia(env: Enviroment, leftResult: Sym, rightResult: Sym): any {
     let result: number = Math.pow(leftResult.value, rightResult.value);
-    //todo tengo que comprobar si es de enteros o de decimales
     this.val = new Sym(leftResult.type, result);
     return new Sym(leftResult.type, result);
   }
   public Modulo(env: Enviroment, leftResult: Sym, rightResult: Sym): any {
     let result: number = leftResult.value % rightResult.value;
-    //todo tengo que comprobar si es de enteros o de decimales
     this.val = new Sym(EnumType.int, result);
     return new Sym(EnumType.int, result);
   }

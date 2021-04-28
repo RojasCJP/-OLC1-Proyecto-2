@@ -44,8 +44,6 @@ class FunctionCall {
                         expression.paramsResult = this.executeParamsExpression(expression, local);
                         instruction = expression;
                     }
-                    console.log(instruction);
-                    console.log('esta es la instruccion');
                     let result = instruction.execute(local);
                     if (result != null && result != undefined) {
                         if (result instanceof sym_1.Sym && !(instruction instanceof expression_1.Expression)) {

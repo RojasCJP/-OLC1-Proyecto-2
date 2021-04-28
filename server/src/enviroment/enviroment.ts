@@ -1,5 +1,6 @@
 import { Instruccion } from '../tree/instruccion';
 import { Sym } from './sym';
+import { GrammarController } from '../controllers/grammarController';
 
 export class Enviroment {
   public table: Map<string, Sym>;
@@ -14,7 +15,6 @@ export class Enviroment {
   }
 
   public getGlobal(): Enviroment | null {
-    //el retorno lleva null para que se pueda mandar eso
     let env: Enviroment;
     for (env = this; env != null; env = env.previous) {
       if (env.previous == null) return env;
@@ -23,6 +23,10 @@ export class Enviroment {
   }
 
   public insert(name: string, sym: Sym, line: number, column: number): boolean {
+    console.log(name, sym);
+    let symbolo: any = { name: name, sym: sym, linea: line, columna: column };
+    GrammarController.symbolos.push(symbolo);
+    //todo con esta linea tengo que hacer el reporte de variables
     name = name.toLowerCase();
     if (this.table.has(name)) return false;
     this.table.set(name, sym);
@@ -34,7 +38,6 @@ export class Enviroment {
     let env: Enviroment | null;
     for (env = this; env != null; env = env.previous) {
       if (env.table.has(name)) {
-        //este unefined se pone unicamente para que typescript no lo detecte como un error, al igual que el retorno
         let sym: Sym | undefined = env.table.get(name);
         return sym;
       }

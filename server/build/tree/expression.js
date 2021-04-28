@@ -72,7 +72,6 @@ class Expression {
             return null;
         else
             switch (this.type) {
-                // todo tengo que hacer el de negado
                 case Expression_type.SUMA:
                     return this.Suma(env, leftResult, rightResult);
                 case Expression_type.RESTA:
@@ -175,37 +174,31 @@ class Expression {
     }
     Suma(env, leftResult, rightResult) {
         let result = leftResult.value + rightResult.value;
-        //todo tengo que comprobar si es de enteros o de decimales
         this.val = new sym_1.Sym(leftResult.type, result);
         return new sym_1.Sym(leftResult.type, result);
     }
     Resta(env, leftResult, rightResult) {
         let result = leftResult.value - rightResult.value;
-        //todo tengo que comprobar si es de enteros o de decimales
         this.val = new sym_1.Sym(leftResult.type, result);
         return new sym_1.Sym(leftResult.type, result);
     }
     Multiplicacion(env, leftResult, rightResult) {
         let result = leftResult.value * rightResult.value;
-        //todo tengo que comprobar si es de enteros o de decimales
         this.val = new sym_1.Sym(leftResult.type, result);
         return new sym_1.Sym(leftResult.type, result);
     }
     Division(env, leftResult, rightResult) {
         let result = leftResult.value / rightResult.value;
-        //todo tengo que comprobar si es de enteros o de decimales
         this.val = new sym_1.Sym(sym_1.EnumType.double, result);
         return new sym_1.Sym(sym_1.EnumType.double, result);
     }
     Potencia(env, leftResult, rightResult) {
         let result = Math.pow(leftResult.value, rightResult.value);
-        //todo tengo que comprobar si es de enteros o de decimales
         this.val = new sym_1.Sym(leftResult.type, result);
         return new sym_1.Sym(leftResult.type, result);
     }
     Modulo(env, leftResult, rightResult) {
         let result = leftResult.value % rightResult.value;
-        //todo tengo que comprobar si es de enteros o de decimales
         this.val = new sym_1.Sym(sym_1.EnumType.int, result);
         return new sym_1.Sym(sym_1.EnumType.int, result);
     }
