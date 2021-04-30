@@ -3,7 +3,8 @@
     const declaration = require("../tree/declaracion");
     const asignation = require("../tree/asignacion")
     const exp = require("../tree/expression");
-    const iff = require("../tree/if")
+    const iff = require("../tree/if");
+    const elsee = require("../tree/else");
     const func_call = require("../tree/function_call");
     const func = require("../tree/function");
     const inst = require("../tree/instruccion");
@@ -194,6 +195,7 @@ asignacion_variables: IDENTIFICADOR IGUAL expression P_COMA {$$ = new asignation
 ;
 
 if: IF PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C {$$ = new iff.If($3,$6,@2.first_line,@2.first_column) ;}
+    |LLAVE_A instrucciones LLAVE_C {$$ = new elsee.Else($2,@2.first_line,@2.first_column);}
 ;
 
 else_if: else_if ELSE if

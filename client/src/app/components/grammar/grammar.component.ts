@@ -29,4 +29,13 @@ export class GrammarComponent implements OnInit {
       }
     );
   }
+
+  abrirReportes() {
+    window.open("/reportes", "_blank");
+    localStorage.setItem("reportes", "no reportes");
+  }
+
+  nuevaPestana() {
+    window.open("/editor", "_blank");
+  }
 }

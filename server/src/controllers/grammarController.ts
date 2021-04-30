@@ -21,10 +21,7 @@ class GrammarController {
     let global: Enviroment = new Enviroment(null);
     GrammarController.executeAST(root, global);
     console.log(global);
-    console.log(GrammarController.consola);
-    console.log(JSON.stringify(root));
-    // todo con esta linea tengo que hacer el reporte ast
-    //todo todavia tengo que hacer el reporte de errores
+    // todo con esta linea tengo que hacer el reporte ast eso se hace con root
     res.json({ codigo: GrammarController.consola });
     GrammarController.consola = '';
   }

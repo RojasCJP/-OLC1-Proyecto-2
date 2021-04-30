@@ -1,23 +1,25 @@
 import { Enviroment } from '../enviroment/enviroment';
 import { EnumType, Sym } from '../enviroment/sym';
 import { Declaration } from './declaracion';
-import { Expression } from './expression';
+import { Expression, Expression_type } from './expression';
 import { FunctionCall } from './function_call';
 import { Instruccion } from './instruccion';
 
-export class If implements Instruccion {
+export class Else implements Instruccion {
   public condition: Expression;
   private instructionList: Instruccion[];
   public line: number;
   public column: number;
 
-  constructor(
-    condition: Expression,
-    instructionList: Instruccion[],
-    line: number,
-    column: number
-  ) {
-    this.condition = condition;
+  constructor(instructionList: Instruccion[], line: number, column: number) {
+    this.condition = new Expression(
+      Expression_type.BOOLEAN,
+      0,
+      0,
+      null,
+      null,
+      'true'
+    );
     this.instructionList = instructionList;
     this.line = line;
     this.column = column;
