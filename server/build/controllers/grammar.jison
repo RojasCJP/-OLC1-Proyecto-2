@@ -5,6 +5,7 @@
     const exp = require("../tree/expression");
     const iff = require("../tree/if");
     const elsee = require("../tree/else");
+    const whilee = require("../tree/while");
     const func_call = require("../tree/function_call");
     const func = require("../tree/function");
     const inst = require("../tree/instruccion");
@@ -144,6 +145,7 @@ instruccion: declaracion_variables { $$ = $1 }
     |actualizacion {$$ = $1 }
     |print_ P_COMA {$$ = $1}
     |else_if {$$ = new listIf.ListIf(this._$.first_line,this._$.first_column,$1);}
+    |while {$$ = $1}
     |function {$$ = $1}
     |function_call P_COMA {$$ = $1}
     |RETURN expression P_COMA {$$ = new returnn.Return($2,@2.first_line,@2.first_column);}
@@ -192,6 +194,9 @@ declaracion_variables: tipo IDENTIFICADOR P_COMA {$$ = new declaration.Declarati
 ;
 
 asignacion_variables: IDENTIFICADOR IGUAL expression P_COMA {$$ = new asignation.Asignation($1,$3,@2.first_line,@2.first_column);}
+;
+
+while: WHILE PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C { $$ = new whilee.While($3,$6,@2.first_line,@2.first_column); }
 ;
 
 if: IF PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C {$$ = new iff.If($3,$6,@2.first_line,@2.first_column) ;}

@@ -113,7 +113,9 @@ class Expression {
                     }
                     return this.val;
                 case Expression_type.CADENA:
-                    this.val.value = this.val.value.substring(1, this.val.value.length - 1);
+                    if (this.val.value[0] == '"') {
+                        this.val.value = this.val.value.substring(1, this.val.value.length - 1);
+                    }
                     return this.val;
                 case Expression_type.CHAR:
                     this.val.value = this.val.value.substring(1, this.val.value.length - 1);
