@@ -14,6 +14,7 @@
     const returnn = require("../tree/return");
     const listIf = require("../tree/list_if");
     const print = require("../tree/print");
+    const do_while = require("../tree/do_while");
     var err;
     var instructionList = controllador.GrammarController.instructionList;
 %}
@@ -146,6 +147,7 @@ instruccion: declaracion_variables { $$ = $1 }
     |print_ P_COMA {$$ = $1}
     |else_if {$$ = new listIf.ListIf(this._$.first_line,this._$.first_column,$1);}
     |while {$$ = $1}
+    |do_while {$$ = $1}
     |function {$$ = $1}
     |function_call P_COMA {$$ = $1}
     |RETURN expression P_COMA {$$ = new returnn.Return($2,@2.first_line,@2.first_column);}
@@ -197,6 +199,9 @@ asignacion_variables: IDENTIFICADOR IGUAL expression P_COMA {$$ = new asignation
 ;
 
 while: WHILE PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C { $$ = new whilee.While($3,$6,@2.first_line,@2.first_column); }
+;
+
+do_while: DO LLAVE_A instrucciones LLAVE_C WHILE PARENTESIS_A expression PARENTESIS_C P_COMA { $$ = new do_while.DoWhile($7, $3,@2.first_line,@2.first_column); }
 ;
 
 if: IF PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C {$$ = new iff.If($3,$6,@2.first_line,@2.first_column) ;}
