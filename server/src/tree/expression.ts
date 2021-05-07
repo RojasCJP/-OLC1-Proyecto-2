@@ -3,6 +3,7 @@ import { Instruccion } from './instruccion';
 import { EnumType, Sym } from '../enviroment/sym';
 import { FunctionCall } from './function_call';
 import { json } from 'express';
+import { Asignation } from './asignacion';
 
 export class Expression implements Instruccion {
   public parameters: Expression[] = [];
@@ -30,6 +31,9 @@ export class Expression implements Instruccion {
     this.line = line;
     this.column = column;
     if (leftExpression != null && rightExpression != null) {
+      this.leftExp = leftExpression;
+      this.rightExp = rightExpression;
+    } else if (leftExpression != null && rightExpression == null) {
       this.leftExp = leftExpression;
       this.rightExp = rightExpression;
     }
@@ -90,10 +94,16 @@ export class Expression implements Instruccion {
           return this.Multiplicacion(env, leftResult, rightResult);
         case Expression_type.DIVISION:
           return this.Division(env, leftResult, rightResult);
+        case Expression_type.NEGADO:
+          return this.Negativo(env, leftResult, rightResult);
         case Expression_type.POTENCIA:
           return this.Potencia(env, leftResult, rightResult);
         case Expression_type.MODULO:
           return this.Modulo(env, leftResult, rightResult);
+        case Expression_type.AUMENTO:
+          return this.Aumento(env, leftResult, rightResult);
+        case Expression_type.DISMINUCION:
+          return this.Disminucion(env, leftResult, rightResult);
         case Expression_type.MAYOR:
           return this.Mayor(env, leftResult, rightResult);
         case Expression_type.MENOR:
@@ -186,14 +196,17 @@ export class Expression implements Instruccion {
   }
   public Identificador(env: Enviroment): any {
     let sym: Sym | undefined;
+    let name: string;
     if (this.type == Expression_type.IDENTIFICADOR) {
       sym = env.search(this.value, 0, 0);
+      name = this.value;
     } else {
       sym = env.search(this.val.value, 0, 0);
+      name = this.val.value;
     }
     if (sym != undefined && sym != null) {
-      this.val = new Sym(sym.type, sym.value);
-      return new Sym(sym.type, sym.value);
+      this.val = new Sym(sym.type, sym.value, name);
+      return new Sym(sym.type, sym.value, name);
     }
     return new Sym(EnumType.error, '@error');
   }
@@ -221,6 +234,16 @@ export class Expression implements Instruccion {
     this.val = new Sym(EnumType.double, result);
     return new Sym(EnumType.double, result);
   }
+  public Negativo(env: Enviroment, leftResult: Sym, rightResult: Sym): any {
+    let result: number = leftResult.value * -1;
+    if (leftResult.type == EnumType.double) {
+      this.val = new Sym(EnumType.double);
+      return new Sym(EnumType.double, result);
+    } else if (leftResult.type == EnumType.int) {
+      this.val = new Sym(EnumType.int);
+      return new Sym(EnumType.int, result);
+    }
+  }
   public Potencia(env: Enviroment, leftResult: Sym, rightResult: Sym): any {
     let result: number = Math.pow(leftResult.value, rightResult.value);
     this.val = new Sym(leftResult.type, result);
@@ -230,6 +253,57 @@ export class Expression implements Instruccion {
     let result: number = leftResult.value % rightResult.value;
     this.val = new Sym(EnumType.int, result);
     return new Sym(EnumType.int, result);
+  }
+  public Aumento(env: Enviroment, leftResult: Sym, rightResult: Sym): any {
+    let result: number = leftResult.value + 1;
+    let newValue: Expression = new Expression(
+      Expression_type.ENTERO,
+      0,
+      0,
+      null,
+      null,
+      result
+    );
+    let actualizacion: Asignation = new Asignation(
+      leftResult.name,
+      newValue,
+      0,
+      0
+    );
+    actualizacion.execute(env);
+    if (leftResult.type == EnumType.double) {
+      this.val = new Sym(EnumType.double);
+      return new Sym(EnumType.double, result);
+    } else if (leftResult.type == EnumType.int) {
+      this.val = new Sym(EnumType.int);
+      return new Sym(EnumType.int, result);
+    }
+  }
+  public Disminucion(env: Enviroment, leftResult: Sym, rightResult: Sym) {
+    let result: number = leftResult.value - 1;
+    console.log(leftResult);
+    let newValue: Expression = new Expression(
+      Expression_type.ENTERO,
+      0,
+      0,
+      null,
+      null,
+      result
+    );
+    let actualizacion: Asignation = new Asignation(
+      leftResult.name,
+      newValue,
+      0,
+      0
+    );
+    actualizacion.execute(env);
+    if (leftResult.type == EnumType.double) {
+      this.val = new Sym(EnumType.double);
+      return new Sym(EnumType.double, result);
+    } else if (leftResult.type == EnumType.int) {
+      this.val = new Sym(EnumType.int);
+      return new Sym(EnumType.int, result);
+    }
   }
   public Mayor(env: Enviroment, leftResult: Sym, rightResult: Sym): any {
     let result: boolean = leftResult.value > rightResult.value;
@@ -287,12 +361,10 @@ export class Expression implements Instruccion {
   }
   public Not(env: Enviroment, leftResult: Sym, rightResult: Sym): any {
     let result: boolean;
-    if (leftResult.type == rightResult.type) {
-      if (leftResult.type == EnumType.boolean) {
-        result = !leftResult.value;
-        this.val = new Sym(EnumType.boolean, result);
-        return new Sym(EnumType.boolean, result);
-      }
+    if (leftResult.type == EnumType.boolean) {
+      result = !leftResult.value;
+      this.val = new Sym(EnumType.boolean, result);
+      return new Sym(EnumType.boolean, result);
     }
     return new Sym(EnumType.boolean, 'error');
   }
@@ -305,6 +377,9 @@ export enum Expression_type {
   DIVISION,
   POTENCIA,
   MODULO,
+  AUMENTO,
+  DISMINUCION,
+  NEGADO,
   MAYOR,
   MENOR,
   MAYORIGUAL,

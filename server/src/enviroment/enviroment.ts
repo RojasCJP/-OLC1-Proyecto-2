@@ -23,7 +23,6 @@ export class Enviroment {
   }
 
   public insert(name: string, sym: Sym, line: number, column: number): boolean {
-    console.log(name, sym);
     let symbolo: any = { name: name, sym: sym, linea: line, columna: column };
     GrammarController.symbolos.push(symbolo);
     //todo con esta linea tengo que hacer el reporte de variables

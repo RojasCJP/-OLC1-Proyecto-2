@@ -18,6 +18,8 @@ class GrammarRoutes {
     this.router.get('/errores', grammarController.errores);
 
     this.router.get('/sym', grammarController.symbolos);
+
+    this.router.get('/instructions', grammarController.instructions);
   }
 }
 

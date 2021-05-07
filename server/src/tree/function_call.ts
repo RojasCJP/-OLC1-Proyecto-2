@@ -23,10 +23,11 @@ export class FunctionCall implements Instruccion {
     this.parametersExpressions = parametersExpression;
     this.line = line;
     this.column = column;
+    // trae una lista de expressiones y guarda en el val lo que metimos
   }
 
   execute(env: Enviroment): Sym | null {
-    let local: Enviroment = new Enviroment(env.getGlobal());
+    let local: Enviroment = new Enviroment(env);
     let fun: Sym | undefined = local.search(
       this.id + '%%',
       this.line,
@@ -34,6 +35,13 @@ export class FunctionCall implements Instruccion {
     );
     if (fun != undefined && fun != null) {
       let parameterIns: ParametersIns = fun.value;
+      if (parameterIns.parameters != null) {
+        for (let i = 0; i < parameterIns.parameters.length; i++) {
+          if (this.parametersExpressions != null) {
+            parameterIns.parameters[i].value = this.parametersExpressions[i];
+          }
+        }
+      }
       let parameters: Declaration[] | null = parameterIns.parameters;
       let instructions: Instruccion[] = parameterIns.instructions;
       if (parameters != null && parameters != undefined) {

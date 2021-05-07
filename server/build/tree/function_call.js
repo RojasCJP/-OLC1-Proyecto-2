@@ -11,12 +11,20 @@ class FunctionCall {
         this.parametersExpressions = parametersExpression;
         this.line = line;
         this.column = column;
+        // trae una lista de expressiones y guarda en el val lo que metimos
     }
     execute(env) {
-        let local = new enviroment_1.Enviroment(env.getGlobal());
+        let local = new enviroment_1.Enviroment(env);
         let fun = local.search(this.id + '%%', this.line, this.column);
         if (fun != undefined && fun != null) {
             let parameterIns = fun.value;
+            if (parameterIns.parameters != null) {
+                for (let i = 0; i < parameterIns.parameters.length; i++) {
+                    if (this.parametersExpressions != null) {
+                        parameterIns.parameters[i].value = this.parametersExpressions[i];
+                    }
+                }
+            }
             let parameters = parameterIns.parameters;
             let instructions = parameterIns.instructions;
             if (parameters != null && parameters != undefined) {

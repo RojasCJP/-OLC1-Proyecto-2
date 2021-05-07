@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Expression_type = exports.Expression = void 0;
 const sym_1 = require("../enviroment/sym");
 const function_call_1 = require("./function_call");
+const asignacion_1 = require("./asignacion");
 class Expression {
     constructor(type, line, column, leftExpression, rightExpression, value, parameters) {
         this.parameters = [];
@@ -19,6 +20,10 @@ class Expression {
         this.line = line;
         this.column = column;
         if (leftExpression != null && rightExpression != null) {
+            this.leftExp = leftExpression;
+            this.rightExp = rightExpression;
+        }
+        else if (leftExpression != null && rightExpression == null) {
             this.leftExp = leftExpression;
             this.rightExp = rightExpression;
         }
@@ -80,10 +85,16 @@ class Expression {
                     return this.Multiplicacion(env, leftResult, rightResult);
                 case Expression_type.DIVISION:
                     return this.Division(env, leftResult, rightResult);
+                case Expression_type.NEGADO:
+                    return this.Negativo(env, leftResult, rightResult);
                 case Expression_type.POTENCIA:
                     return this.Potencia(env, leftResult, rightResult);
                 case Expression_type.MODULO:
                     return this.Modulo(env, leftResult, rightResult);
+                case Expression_type.AUMENTO:
+                    return this.Aumento(env, leftResult, rightResult);
+                case Expression_type.DISMINUCION:
+                    return this.Disminucion(env, leftResult, rightResult);
                 case Expression_type.MAYOR:
                     return this.Mayor(env, leftResult, rightResult);
                 case Expression_type.MENOR:
@@ -162,15 +173,18 @@ class Expression {
     }
     Identificador(env) {
         let sym;
+        let name;
         if (this.type == Expression_type.IDENTIFICADOR) {
             sym = env.search(this.value, 0, 0);
+            name = this.value;
         }
         else {
             sym = env.search(this.val.value, 0, 0);
+            name = this.val.value;
         }
         if (sym != undefined && sym != null) {
-            this.val = new sym_1.Sym(sym.type, sym.value);
-            return new sym_1.Sym(sym.type, sym.value);
+            this.val = new sym_1.Sym(sym.type, sym.value, name);
+            return new sym_1.Sym(sym.type, sym.value, name);
         }
         return new sym_1.Sym(sym_1.EnumType.error, '@error');
     }
@@ -194,6 +208,17 @@ class Expression {
         this.val = new sym_1.Sym(sym_1.EnumType.double, result);
         return new sym_1.Sym(sym_1.EnumType.double, result);
     }
+    Negativo(env, leftResult, rightResult) {
+        let result = leftResult.value * -1;
+        if (leftResult.type == sym_1.EnumType.double) {
+            this.val = new sym_1.Sym(sym_1.EnumType.double);
+            return new sym_1.Sym(sym_1.EnumType.double, result);
+        }
+        else if (leftResult.type == sym_1.EnumType.int) {
+            this.val = new sym_1.Sym(sym_1.EnumType.int);
+            return new sym_1.Sym(sym_1.EnumType.int, result);
+        }
+    }
     Potencia(env, leftResult, rightResult) {
         let result = Math.pow(leftResult.value, rightResult.value);
         this.val = new sym_1.Sym(leftResult.type, result);
@@ -203,6 +228,35 @@ class Expression {
         let result = leftResult.value % rightResult.value;
         this.val = new sym_1.Sym(sym_1.EnumType.int, result);
         return new sym_1.Sym(sym_1.EnumType.int, result);
+    }
+    Aumento(env, leftResult, rightResult) {
+        let result = leftResult.value + 1;
+        let newValue = new Expression(Expression_type.ENTERO, 0, 0, null, null, result);
+        let actualizacion = new asignacion_1.Asignation(leftResult.name, newValue, 0, 0);
+        actualizacion.execute(env);
+        if (leftResult.type == sym_1.EnumType.double) {
+            this.val = new sym_1.Sym(sym_1.EnumType.double);
+            return new sym_1.Sym(sym_1.EnumType.double, result);
+        }
+        else if (leftResult.type == sym_1.EnumType.int) {
+            this.val = new sym_1.Sym(sym_1.EnumType.int);
+            return new sym_1.Sym(sym_1.EnumType.int, result);
+        }
+    }
+    Disminucion(env, leftResult, rightResult) {
+        let result = leftResult.value - 1;
+        console.log(leftResult);
+        let newValue = new Expression(Expression_type.ENTERO, 0, 0, null, null, result);
+        let actualizacion = new asignacion_1.Asignation(leftResult.name, newValue, 0, 0);
+        actualizacion.execute(env);
+        if (leftResult.type == sym_1.EnumType.double) {
+            this.val = new sym_1.Sym(sym_1.EnumType.double);
+            return new sym_1.Sym(sym_1.EnumType.double, result);
+        }
+        else if (leftResult.type == sym_1.EnumType.int) {
+            this.val = new sym_1.Sym(sym_1.EnumType.int);
+            return new sym_1.Sym(sym_1.EnumType.int, result);
+        }
     }
     Mayor(env, leftResult, rightResult) {
         let result = leftResult.value > rightResult.value;
@@ -256,12 +310,10 @@ class Expression {
     }
     Not(env, leftResult, rightResult) {
         let result;
-        if (leftResult.type == rightResult.type) {
-            if (leftResult.type == sym_1.EnumType.boolean) {
-                result = !leftResult.value;
-                this.val = new sym_1.Sym(sym_1.EnumType.boolean, result);
-                return new sym_1.Sym(sym_1.EnumType.boolean, result);
-            }
+        if (leftResult.type == sym_1.EnumType.boolean) {
+            result = !leftResult.value;
+            this.val = new sym_1.Sym(sym_1.EnumType.boolean, result);
+            return new sym_1.Sym(sym_1.EnumType.boolean, result);
         }
         return new sym_1.Sym(sym_1.EnumType.boolean, 'error');
     }
@@ -275,21 +327,24 @@ var Expression_type;
     Expression_type[Expression_type["DIVISION"] = 3] = "DIVISION";
     Expression_type[Expression_type["POTENCIA"] = 4] = "POTENCIA";
     Expression_type[Expression_type["MODULO"] = 5] = "MODULO";
-    Expression_type[Expression_type["MAYOR"] = 6] = "MAYOR";
-    Expression_type[Expression_type["MENOR"] = 7] = "MENOR";
-    Expression_type[Expression_type["MAYORIGUAL"] = 8] = "MAYORIGUAL";
-    Expression_type[Expression_type["MENORIGUAL"] = 9] = "MENORIGUAL";
-    Expression_type[Expression_type["IGUALIGUAL"] = 10] = "IGUALIGUAL";
-    Expression_type[Expression_type["DIFERENTE"] = 11] = "DIFERENTE";
-    Expression_type[Expression_type["NOT"] = 12] = "NOT";
-    Expression_type[Expression_type["OR"] = 13] = "OR";
-    Expression_type[Expression_type["AND"] = 14] = "AND";
-    Expression_type[Expression_type["ENTERO"] = 15] = "ENTERO";
-    Expression_type[Expression_type["DECIMAL"] = 16] = "DECIMAL";
-    Expression_type[Expression_type["CADENA"] = 17] = "CADENA";
-    Expression_type[Expression_type["CHAR"] = 18] = "CHAR";
-    Expression_type[Expression_type["BOOLEAN"] = 19] = "BOOLEAN";
-    Expression_type[Expression_type["IDENTIFICADOR"] = 20] = "IDENTIFICADOR";
-    Expression_type[Expression_type["FUNCION"] = 21] = "FUNCION";
-    Expression_type[Expression_type["NULO"] = 22] = "NULO";
+    Expression_type[Expression_type["AUMENTO"] = 6] = "AUMENTO";
+    Expression_type[Expression_type["DISMINUCION"] = 7] = "DISMINUCION";
+    Expression_type[Expression_type["NEGADO"] = 8] = "NEGADO";
+    Expression_type[Expression_type["MAYOR"] = 9] = "MAYOR";
+    Expression_type[Expression_type["MENOR"] = 10] = "MENOR";
+    Expression_type[Expression_type["MAYORIGUAL"] = 11] = "MAYORIGUAL";
+    Expression_type[Expression_type["MENORIGUAL"] = 12] = "MENORIGUAL";
+    Expression_type[Expression_type["IGUALIGUAL"] = 13] = "IGUALIGUAL";
+    Expression_type[Expression_type["DIFERENTE"] = 14] = "DIFERENTE";
+    Expression_type[Expression_type["NOT"] = 15] = "NOT";
+    Expression_type[Expression_type["OR"] = 16] = "OR";
+    Expression_type[Expression_type["AND"] = 17] = "AND";
+    Expression_type[Expression_type["ENTERO"] = 18] = "ENTERO";
+    Expression_type[Expression_type["DECIMAL"] = 19] = "DECIMAL";
+    Expression_type[Expression_type["CADENA"] = 20] = "CADENA";
+    Expression_type[Expression_type["CHAR"] = 21] = "CHAR";
+    Expression_type[Expression_type["BOOLEAN"] = 22] = "BOOLEAN";
+    Expression_type[Expression_type["IDENTIFICADOR"] = 23] = "IDENTIFICADOR";
+    Expression_type[Expression_type["FUNCION"] = 24] = "FUNCION";
+    Expression_type[Expression_type["NULO"] = 25] = "NULO";
 })(Expression_type = exports.Expression_type || (exports.Expression_type = {}));

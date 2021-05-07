@@ -35,8 +35,6 @@ export class ListIf implements Instruccion {
         this.listIf[i].execute(env);
       } else if (this.listIf[i] instanceof Else) {
         for (let j = 0; j < this.condiciones.length; j++) {
-          console.log('estas son las condiciones');
-          console.log(this.condiciones[j]);
           if (this.condiciones[j]) {
             trigger = false;
           }

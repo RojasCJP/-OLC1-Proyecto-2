@@ -2,12 +2,18 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EnumType = exports.Sym = void 0;
 class Sym {
-    constructor(type, value) {
+    constructor(type, value, name) {
         if (type != undefined && value != undefined) {
             this.type = type;
             this.value = value;
         }
         this.breturn = false;
+        if (name) {
+            this.name = name;
+        }
+        else {
+            this.name = '';
+        }
     }
     toString() {
         if (this.value != null || this.value != undefined) {

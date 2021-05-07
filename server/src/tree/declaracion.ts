@@ -5,7 +5,7 @@ import { Enviroment } from '../enviroment/enviroment';
 
 export class Declaration implements Instruccion {
   public id: string;
-  private value: Expression | null;
+  public value: Expression | null;
   private symResult: Sym[] = [];
   private type: EnumType;
   private line: number;
@@ -30,7 +30,7 @@ export class Declaration implements Instruccion {
       this.value.paramsResult = this.executeParams(this.value, env);
       let valueResult: Sym = this.value.execute(env);
       if (valueResult.type == this.type) {
-        let sym: Sym = new Sym(valueResult.type, valueResult.value);
+        let sym: Sym = new Sym(valueResult.type, valueResult.value, this.id);
         let insert: boolean = env.insert(this.id, sym, this.line, this.column);
         if (insert) console.log('se agrego de manera correcta');
       }

@@ -16,7 +16,7 @@ class Declaration {
             this.value.paramsResult = this.executeParams(this.value, env);
             let valueResult = this.value.execute(env);
             if (valueResult.type == this.type) {
-                let sym = new sym_1.Sym(valueResult.type, valueResult.value);
+                let sym = new sym_1.Sym(valueResult.type, valueResult.value, this.id);
                 let insert = env.insert(this.id, sym, this.line, this.column);
                 if (insert)
                     console.log('se agrego de manera correcta');

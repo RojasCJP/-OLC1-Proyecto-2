@@ -24,6 +24,11 @@
 
 %%
 
+/*comentarios*/
+("/""/")([^\n])*\n {};
+//("/""*")([^\n\r]|\n)*("*/") {console.log(yytext);}
+[/][*][^*]*[*]+([^/*][^*]*[*]+)*[/] {};
+
 "," return "COMA";
 ";" return 'P_COMA';
 ":" return 'DOSPUNTOS';
@@ -95,7 +100,7 @@
 "'"([^']*)"'"               return 'CARACTER'
 "true"                      return 'TRUE';
 "false"                     return 'FALSE';
-[a-zA-z_]([0-9a-zA-z_])*    return 'IDENTIFICADOR';
+[a-zA-z_]([0-9a-zA-Z_])*    return 'IDENTIFICADOR';
 
 <<EOF>>              return 'EOF';
 
@@ -150,6 +155,7 @@ instruccion: declaracion_variables { $$ = $1 }
     |do_while {$$ = $1}
     |function {$$ = $1}
     |function_call P_COMA {$$ = $1}
+    |EXEC instruccion {$$ = $2}
     |RETURN expression P_COMA {$$ = new returnn.Return($2,@2.first_line,@2.first_column);}
     |error P_COMA {
         err = {tipo:"sintactico", mensaje:"se recupero en "+yytext, linea:this._$.first_line, columna:this._$.first_column};
@@ -157,26 +163,26 @@ instruccion: declaracion_variables { $$ = $1 }
          console.error('Este es un error sintáctico: ' + yytext + ', en la linea: ' + this._$.first_line + ', en la columna: ' + this._$.first_column); 
          };
 
-expression: MENOS expression %prec UMENOS
+expression: MENOS expression %prec UMENOS { $$ = new exp.Expression(exp.Expression_type.NEGADO,@2.first_line,@2.first_column,$2,null); }
     |PARENTESIS_A tipo PARENTESIS_C expression
-    |expression MAS expression {$$ = new exp.Expression(exp.Expression_type.SUMA, @2.first_line, @2.first_column, $1, $3); console.log('llega a suma');}
+    |expression MAS expression {$$ = new exp.Expression(exp.Expression_type.SUMA, @2.first_line, @2.first_column, $1, $3); }
     |expression MENOS expression {$$ = new exp.Expression(exp.Expression_type.RESTA, @2.first_line, @2.first_column, $1, $3);}
     |expression MULTI expression {$$ = new exp.Expression(exp.Expression_type.MULTIPLICACION, @2.first_line, @2.first_column, $1, $3);}
     |expression DIVISION expression {$$ = new exp.Expression(exp.Expression_type.DIVISION, @2.first_line, @2.first_column, $1, $3);} 
     |expression POTENCIA expression {$$ = new exp.Expression(exp.Expression_type.POTENCIA, @2.first_line, @2.first_column, $1, $3);}
     |expression MODULO expression {$$ = new exp.Expression(exp.Expression_type.MODULO, @2.first_line, @2.first_column, $1, $3);}
-    |PARENTESIS_A expression PARENTESIS_C {$$=$2; console.log("llega a parentesis");}
+    |PARENTESIS_A expression PARENTESIS_C {$$=$2;}
     |expression AND expression {$$ = new exp.Expression(exp.Expression_type.AND, @2.first_line, @2.first_column, $1, $3);}
     |expression OR expression {$$ = new exp.Expression(exp.Expression_type.OR, @2.first_line, @2.first_column, $1, $3);}
-    |NOT expression {$$ = new exp.Expression(exp.Expression_type.NOT,@2.first_line,@2.first_column,$2,$2);}
+    |NOT expression {$$ = new exp.Expression(exp.Expression_type.NOT,@2.first_line,@2.first_column,$2,null);}
     |expression MAYOR expression {$$ = new exp.Expression(exp.Expression_type.MAYOR, @2.first_line, @2.first_column, $1, $3);}
     |expression MENOR expression {$$ = new exp.Expression(exp.Expression_type.MENOR, @2.first_line, @2.first_column, $1, $3);}
     |expression MAYORIGUAL expression {$$ = new exp.Expression(exp.Expression_type.MAYORIGUAL, @2.first_line, @2.first_column, $1, $3);}
     |expression MENORIGUAL expression {$$ = new exp.Expression(exp.Expression_type.MENORIGUAL, @2.first_line, @2.first_column, $1, $3);}
     |expression IGUALIGUAL expression {$$ = new exp.Expression(exp.Expression_type.IGUALIGUAL, @2.first_line, @2.first_column, $1, $3);}
     |expression DIFERENTE expression {$$ = new exp.Expression(exp.Expression_type.DIFERENTE, @2.first_line, @2.first_column, $1, $3);}
-    |expression MAS MAS
-    |expression MENOS MENOS
+    |expression MAS MAS {$$ = new exp.Expression(exp.Expression_type.AUMENTO,@2.first_line,@2.first_column,$1,$1);}
+    |expression MENOS MENOS {$$ = new exp.Expression(exp.Expression_type.DISMINUCION,@2.first_line,@2.first_column,$1,$1);}
     |ENTERO {$$ = new exp.Expression(exp.Expression_type.ENTERO,this._$.first_line,this._$.first_column,null,null,$1);}
     |DECIMAL {$$ = new exp.Expression(exp.Expression_type.DECIMAL,this._$.first_line,this._$.first_column,null,null,$1);}
     |CADENA {$$ = new exp.Expression(exp.Expression_type.CADENA,this._$.first_line,this._$.first_column,null,null,$1);}

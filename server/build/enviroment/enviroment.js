@@ -18,7 +18,6 @@ class Enviroment {
         return null;
     }
     insert(name, sym, line, column) {
-        console.log(name, sym);
         let symbolo = { name: name, sym: sym, linea: line, columna: column };
         grammarController_1.GrammarController.symbolos.push(symbolo);
         //todo con esta linea tengo que hacer el reporte de variables

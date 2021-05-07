@@ -1,6 +1,8 @@
 import { Response, Request } from 'express';
 import { Enviroment } from '../enviroment/enviroment';
 import { Sym } from '../enviroment/sym';
+import { Asignation } from '../tree/asignacion';
+import { Declaration } from '../tree/declaracion';
 import { Instruccion } from '../tree/instruccion';
 class GrammarController {
   static consola: string = '';
@@ -20,7 +22,7 @@ class GrammarController {
     let root: Instruccion[] = GrammarController.instructionList;
     let global: Enviroment = new Enviroment(null);
     GrammarController.executeAST(root, global);
-    console.log(global);
+    // console.log(GrammarController.instructionList);
     // todo con esta linea tengo que hacer el reporte ast eso se hace con root
     res.json({ codigo: GrammarController.consola });
     GrammarController.consola = '';
@@ -34,6 +36,22 @@ class GrammarController {
     res.json(GrammarController.symbolos);
   }
 
+  public instructions(req: Request, res: Response) {
+    let root: Instruccion[] = GrammarController.instructionList;
+    root.forEach((instruccion) => {
+      if (instruccion instanceof Declaration) {
+        let declaration: Declaration = instruccion;
+        console.log(declaration.id);
+        console.log(declaration.value?.val.value);
+      }
+      if (instruccion instanceof Asignation) {
+        let asignation: Asignation = instruccion;
+        console.log(asignation.id);
+        console.log(asignation.value.val.value);
+      }
+    });
+    res.json(GrammarController.instructionList);
+  }
   static executeAST(root: Instruccion[], global: Enviroment): void {
     if (root != null && root != undefined) {
       root.forEach((ins) => {

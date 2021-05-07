@@ -1,14 +1,22 @@
+import e from 'express';
+
 export class Sym {
   public type: EnumType | undefined;
   public value: any;
   public breturn: boolean;
+  public name: string;
 
-  constructor(type?: EnumType, value?: any) {
+  constructor(type?: EnumType, value?: any, name?: string) {
     if (type != undefined && value != undefined) {
       this.type = type;
       this.value = value;
     }
     this.breturn = false;
+    if (name) {
+      this.name = name;
+    } else {
+      this.name = '';
+    }
   }
 
   toString(): string {

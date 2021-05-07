@@ -13,6 +13,7 @@ class GrammarRoutes {
         this.router.post('/analizar', grammarController_1.grammarController.lector);
         this.router.get('/errores', grammarController_1.grammarController.errores);
         this.router.get('/sym', grammarController_1.grammarController.symbolos);
+        this.router.get('/instructions', grammarController_1.grammarController.instructions);
     }
 }
 const grammarRoutes = new GrammarRoutes();
