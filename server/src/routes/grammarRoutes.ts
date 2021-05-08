@@ -20,6 +20,8 @@ class GrammarRoutes {
     this.router.get('/sym', grammarController.symbolos);
 
     this.router.get('/instructions', grammarController.instructions);
+
+    this.router.get('/graph', grammarController.graphviz);
   }
 }
 

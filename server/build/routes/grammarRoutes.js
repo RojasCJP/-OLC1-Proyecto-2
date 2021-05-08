@@ -14,6 +14,7 @@ class GrammarRoutes {
         this.router.get('/errores', grammarController_1.grammarController.errores);
         this.router.get('/sym', grammarController_1.grammarController.symbolos);
         this.router.get('/instructions', grammarController_1.grammarController.instructions);
+        this.router.get('/graph', grammarController_1.grammarController.graphviz);
     }
 }
 const grammarRoutes = new GrammarRoutes();

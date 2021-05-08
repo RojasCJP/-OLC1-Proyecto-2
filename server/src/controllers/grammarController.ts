@@ -1,4 +1,4 @@
-import { Response, Request } from 'express';
+import { Response, Request, response } from 'express';
 import { Enviroment } from '../enviroment/enviroment';
 import { Sym } from '../enviroment/sym';
 import { Asignation } from '../tree/asignacion';
@@ -20,6 +20,7 @@ class GrammarController {
   static errores: Errores[] = [];
   static symbolos: Symbolos[] = [];
   static contador: number = 0;
+  static graph: string = '';
   static instructionList: Instruccion[] = [];
 
   constructor() {}
@@ -63,65 +64,103 @@ class GrammarController {
     res.json(GrammarController.instructionList);
   }
 
+  public graphviz(req: Request, res: Response) {
+    let graph: string;
+    let root: Instruccion[] = GrammarController.instructionList;
+    GrammarController.makeGraph(root, 0);
+    graph = 'digraph G {';
+    graph += GrammarController.graph;
+    graph += '}';
+    const fs = require('fs');
+    fs.writeFile('../client/src/assets/arbol.dot', graph, () => {});
+
+    const { exec } = require('child_process');
+
+    exec(
+      'dot.exe -Tpng ../client/src/assets/arbol.dot -o ../client/src/assets/arbol12.png',
+      (error: { message: any }, stdout: any, stderr: any) => {
+        if (error) {
+          console.log(`error: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+        }
+        console.log(`stdout: ${stdout}`);
+      }
+    );
+
+    res.json({ mensaje: graph });
+  }
+
   static makeGraph(instructions: Instruccion[], padre: number) {
     instructions.forEach((instruction) => {
       let valorNodo: number = GrammarController.contador + 1;
       if (instruction instanceof Declaration) {
         let declaration: Declaration = instruction;
         GrammarController.contador++;
-        console.log(padre + '->' + GrammarController.contador + ';');
-        console.log(GrammarController.contador + '[label="declaracion"];');
+        GrammarController.graph +=
+          padre + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
+          GrammarController.contador + '[label="declaracion"];';
         GrammarController.contador++;
-        console.log(valorNodo + '->' + GrammarController.contador + ';');
-        console.log(
-          GrammarController.contador + '[label="' + declaration.id + '"];'
-        );
+        GrammarController.graph +=
+          valorNodo + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
+          GrammarController.contador + '[label="' + declaration.id + '"];';
         if (declaration.value?.val.value != undefined) {
           GrammarController.contador++;
-          console.log(valorNodo + '->' + GrammarController.contador + ';');
-          console.log(
+          GrammarController.graph +=
+            valorNodo + '->' + GrammarController.contador + ';';
+          GrammarController.graph +=
             GrammarController.contador +
-              '[label="' +
-              declaration.value?.val.value +
-              '"];'
-          );
+            '[label="' +
+            declaration.value?.val.value +
+            '"];';
         }
       }
       if (instruction instanceof Asignation) {
         let asignation: Asignation = instruction;
         GrammarController.contador++;
-        console.log(padre + '->' + GrammarController.contador + ';');
-        console.log(GrammarController.contador + '[label="asignacion"];');
+        GrammarController.graph +=
+          padre + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
+          GrammarController.contador + '[label="asignacion"];';
         GrammarController.contador++;
-        console.log(valorNodo + '->' + GrammarController.contador + ';');
-        console.log(
-          GrammarController.contador + '[label="' + asignation.id + '"];'
-        );
+        GrammarController.graph +=
+          valorNodo + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
+          GrammarController.contador + '[label="' + asignation.id + '"];';
         GrammarController.contador++;
-        console.log(valorNodo + '->' + GrammarController.contador + ';');
-        console.log(
+        GrammarController.graph +=
+          valorNodo + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
           GrammarController.contador +
-            '[label="' +
-            asignation.value?.val.value +
-            '"];'
-        );
+          '[label="' +
+          asignation.value?.val.value +
+          '"];';
       }
       if (instruction instanceof DoWhile) {
         let doWhile: DoWhile = instruction;
         GrammarController.contador++;
-        console.log(padre + '->' + GrammarController.contador + ';');
-        console.log(GrammarController.contador + '[label="do while"];');
+        GrammarController.graph +=
+          padre + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
+          GrammarController.contador + '[label="do while"];';
         GrammarController.contador++;
-        console.log(valorNodo + '->' + GrammarController.contador + ';');
-        console.log(
+        GrammarController.graph +=
+          valorNodo + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
           GrammarController.contador +
-            '[label="' +
-            doWhile.condition.val.value +
-            '"];'
-        );
+          '[label="' +
+          doWhile.condition.val.value +
+          '"];';
         GrammarController.contador++;
-        console.log(valorNodo + '->' + GrammarController.contador + ';');
-        console.log(GrammarController.contador + '[label="instrucciones"]');
+        GrammarController.graph +=
+          valorNodo + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
+          GrammarController.contador + '[label="instrucciones"]';
 
         GrammarController.makeGraph(
           doWhile.instructionList,
@@ -131,65 +170,109 @@ class GrammarController {
       if (instruction instanceof Else) {
         let else_: Else = instruction;
         GrammarController.contador++;
-        console.log(padre + '->' + GrammarController.contador + ';');
-        console.log(GrammarController.contador + '[label="else"];');
+        GrammarController.graph +=
+          padre + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
+          GrammarController.contador + '[label="else"];';
         GrammarController.contador++;
-        console.log(valorNodo + '->' + GrammarController.contador + ';');
-        console.log(GrammarController.contador + '[label="instrucciones"]');
+        GrammarController.graph +=
+          valorNodo + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
+          GrammarController.contador + '[label="instrucciones"];';
         GrammarController.makeGraph(
           else_.instructionList,
           GrammarController.contador
         );
       }
       if (instruction instanceof Expression) {
-        console.log('-----------------------expression-----------------------');
         let expression: Expression = instruction;
+        GrammarController.contador++;
+        GrammarController.graph +=
+          padre + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
+          GrammarController.contador + '[label="expresion"];';
         if (expression.val.value == undefined) {
           let contenido: Expression[] = [];
           if (expression.leftExp != null) contenido.push(expression.leftExp);
           if (expression.rightExp != null) contenido.push(expression.rightExp);
-          GrammarController.makeGraph(contenido, valorNodo);
+          GrammarController.makeGraph(contenido, GrammarController.contador);
         } else {
-          console.log(expression.val.value);
+          GrammarController.contador++;
+          GrammarController.graph +=
+            valorNodo + '->' + GrammarController.contador + ';';
+          GrammarController.graph +=
+            GrammarController.contador +
+            '[label="' +
+            expression.val.value +
+            '"];';
         }
       }
       if (instruction instanceof FunctionCall) {
-        console.log(
-          '-----------------------functionCall-----------------------'
-        );
         let functionCall: FunctionCall = instruction;
+        GrammarController.contador++;
+        GrammarController.graph +=
+          padre + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
+          GrammarController.contador + '[label="' + functionCall.id + '"];';
         if (functionCall.parametersExpressions != null) {
+          GrammarController.contador++;
+          GrammarController.graph +=
+            valorNodo + '->' + GrammarController.contador + ';';
+          GrammarController.graph +=
+            GrammarController.contador + '[label="parametros"];';
           GrammarController.makeGraph(
             functionCall.parametersExpressions,
-            valorNodo
+            GrammarController.contador
           );
         }
       }
       if (instruction instanceof Function) {
-        console.log('-----------------------function-----------------------');
         let function_: Function = instruction;
-        console.log(function_.id);
+        GrammarController.contador++;
+        GrammarController.graph +=
+          padre + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
+          GrammarController.contador + '[label="' + function_.id + '"];';
         if (function_.parameters != null) {
-          GrammarController.makeGraph(function_.parameters, valorNodo);
+          GrammarController.contador++;
+          GrammarController.graph +=
+            valorNodo + '->' + GrammarController.contador + ';';
+          GrammarController.graph +=
+            GrammarController.contador + '[label="parametros"];';
+          GrammarController.makeGraph(
+            function_.parameters,
+            GrammarController.contador
+          );
         }
-        GrammarController.makeGraph(function_.instructions, valorNodo);
+        GrammarController.contador++;
+        GrammarController.graph +=
+          valorNodo + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
+          GrammarController.contador + '[label="instrucciones"];';
+        GrammarController.makeGraph(
+          function_.instructions,
+          GrammarController.contador
+        );
       }
       if (instruction instanceof If) {
         let if_: If = instruction;
         GrammarController.contador++;
-        console.log(padre + '->' + GrammarController.contador + ';');
-        console.log(GrammarController.contador + '[label="if"];');
+        GrammarController.graph +=
+          padre + '->' + GrammarController.contador + ';';
+        GrammarController.graph += GrammarController.contador + '[label="if"];';
         GrammarController.contador++;
-        console.log(valorNodo + '->' + GrammarController.contador + ';');
-        console.log(
+        GrammarController.graph +=
+          valorNodo + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
           GrammarController.contador +
-            '[label="' +
-            if_.condition.val.value +
-            '"];'
-        );
+          '[label="' +
+          if_.condition.val.value +
+          '"];';
         GrammarController.contador++;
-        console.log(valorNodo + '->' + GrammarController.contador + ';');
-        console.log(GrammarController.contador + '[label="instrucciones"]');
+        GrammarController.graph +=
+          valorNodo + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
+          GrammarController.contador + '[label="instrucciones"]';
 
         GrammarController.makeGraph(
           if_.instructionList,
@@ -199,40 +282,94 @@ class GrammarController {
       if (instruction instanceof ListIf) {
         let listIf: ListIf = instruction;
         GrammarController.contador++;
-        console.log(padre + '->' + GrammarController.contador + ';');
-        console.log(GrammarController.contador + '[label="lista de if"]');
+        GrammarController.graph +=
+          padre + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
+          GrammarController.contador + '[label="lista de if"]';
         GrammarController.contador++;
-        console.log(valorNodo + '->' + GrammarController.contador + ';');
-        console.log(GrammarController.contador + '[label="instrucciones"]');
+        GrammarController.graph +=
+          valorNodo + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
+          GrammarController.contador + '[label="instrucciones"]';
         GrammarController.makeGraph(listIf.listIf, GrammarController.contador);
       }
       if (instruction instanceof Print) {
-        console.log('-----------------------print-----------------------');
         let print_: Print = instruction;
+        GrammarController.contador++;
+        GrammarController.graph +=
+          padre + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
+          GrammarController.contador + '[label="print"];';
         if (print_ != null && print_.content != null) {
           if (print_.content.value != undefined) {
-            console.log(print_.content.value);
+            let contenidoValor: string;
+            if (print_.content.value[0] == '"') {
+              contenidoValor = print_.content.value.substring(
+                1,
+                print_.content.value.length - 1
+              );
+            } else {
+              contenidoValor = print_.content.value;
+            }
+
+            GrammarController.contador++;
+            GrammarController.graph +=
+              valorNodo + '->' + GrammarController.contador + ';';
+            GrammarController.graph +=
+              GrammarController.contador + '[label="' + contenidoValor + '"];';
           } else {
             let contenido: Expression[] = [print_.content];
-            GrammarController.makeGraph(contenido, valorNodo);
+            GrammarController.makeGraph(contenido, GrammarController.contador);
           }
         }
       }
       if (instruction instanceof Return) {
-        console.log('-----------------------return-----------------------');
         let retorno: Return = instruction;
+        GrammarController.contador++;
+        GrammarController.graph +=
+          padre + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
+          GrammarController.contador + '[label="return"];';
         if (retorno.expression.val.value != null) {
-          console.log(retorno.expression.val.value);
+          let contenidoValor: string;
+          if (retorno.expression.val.value[0] == '"') {
+            contenidoValor = retorno.expression.val.value.substring(
+              1,
+              retorno.expression.val.value.length - 1
+            );
+          } else {
+            contenidoValor = retorno.expression.val.value;
+          }
+          GrammarController.contador++;
+          GrammarController.graph +=
+            valorNodo + '->' + GrammarController.contador + ';';
+          GrammarController.graph +=
+            GrammarController.contador + '[label="' + contenidoValor + '"];';
         } else {
           let contenido: Expression[] = [retorno.expression];
           GrammarController.makeGraph(contenido, valorNodo);
         }
       }
       if (instruction instanceof While) {
-        console.log('-----------------------while-----------------------');
         let while_: While = instruction;
-        console.log(while_.condition.val.value);
-        console.log(while_.condition.val.name);
+        GrammarController.contador++;
+        GrammarController.graph +=
+          padre + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
+          GrammarController.contador + '[label="while"];';
+        GrammarController.contador++;
+        GrammarController.graph +=
+          valorNodo + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
+          GrammarController.contador +
+          '[label="' +
+          while_.condition.val.value +
+          '"];';
+        GrammarController.contador++;
+        GrammarController.graph +=
+          valorNodo + '->' + GrammarController.contador + ';';
+        GrammarController.graph +=
+          GrammarController.contador + '[label="instrucciones"];';
         GrammarController.makeGraph(while_.instructionList, valorNodo);
       }
     });
