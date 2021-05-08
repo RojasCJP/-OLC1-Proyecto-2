@@ -7,7 +7,7 @@ import { Instruccion } from './instruccion';
 
 export class Else implements Instruccion {
   public condition: Expression;
-  private instructionList: Instruccion[];
+  public instructionList: Instruccion[];
   public line: number;
   public column: number;
 

@@ -6,8 +6,8 @@ import { Enviroment } from '../enviroment/enviroment';
 export class Declaration implements Instruccion {
   public id: string;
   public value: Expression | null;
-  private symResult: Sym[] = [];
-  private type: EnumType;
+  public symResult: Sym[] = [];
+  public type: EnumType;
   private line: number;
   private column: number;
 

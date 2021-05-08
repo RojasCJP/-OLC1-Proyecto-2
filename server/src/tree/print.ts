@@ -3,7 +3,7 @@ import { Sym } from '../enviroment/sym';
 import { Expression } from './expression';
 import { Instruccion } from './instruccion';
 export class Print implements Instruccion {
-  private content: Expression | null = null;
+  public content: Expression | null = null;
   private line: number;
   private column: number;
 

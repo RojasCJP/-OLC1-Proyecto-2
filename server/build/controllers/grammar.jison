@@ -147,21 +147,32 @@ sentencias: LLAVE_A instrucciones LLAVE_C
 ;
 
 instruccion: declaracion_variables { $$ = $1 }
-    |asignacion_variables { $$ = $1 }
+    |asignacion_variables P_COMA { $$ = $1 }
     |actualizacion {$$ = $1 }
     |print_ P_COMA {$$ = $1}
     |else_if {$$ = new listIf.ListIf(this._$.first_line,this._$.first_column,$1);}
     |while {$$ = $1}
     |do_while {$$ = $1}
+    |for {$$ = $1} 
+    |switch {$$ = $1}
     |function {$$ = $1}
     |function_call P_COMA {$$ = $1}
     |EXEC instruccion {$$ = $2}
     |RETURN expression P_COMA {$$ = new returnn.Return($2,@2.first_line,@2.first_column);}
+    |RETURN P_COMA {$$ = new returnn.Return(null,@2.first_line,@2.first_column);}
+    |BREAK P_COMA {$$ = new returnn.Return(null,@2.first_line,@2.first_column);}
+    |CONTINUE P_COMA {$$ = new returnn.Return(null,@2.first_line,@2.first_column);}
     |error P_COMA {
         err = {tipo:"sintactico", mensaje:"se recupero en "+yytext, linea:this._$.first_line, columna:this._$.first_column};
         controllador.GrammarController.errores.push(err);
          console.error('Este es un error sintáctico: ' + yytext + ', en la linea: ' + this._$.first_line + ', en la columna: ' + this._$.first_column); 
-         };
+         }
+    |error LLAVE_C {
+        err = {tipo:"sintactico", mensaje:"se recupero en "+yytext, linea:this._$.first_line, columna:this._$.first_column};
+        controllador.GrammarController.errores.push(err);
+         console.error('Este es un error sintáctico: ' + yytext + ', en la linea: ' + this._$.first_line + ', en la columna: ' + this._$.first_column); 
+         }         
+;
 
 expression: MENOS expression %prec UMENOS { $$ = new exp.Expression(exp.Expression_type.NEGADO,@2.first_line,@2.first_column,$2,null); }
     |PARENTESIS_A tipo PARENTESIS_C expression
@@ -201,13 +212,17 @@ declaracion_variables: tipo IDENTIFICADOR P_COMA {$$ = new declaration.Declarati
     |tipo IDENTIFICADOR IGUAL expression P_COMA {$$ = new declaration.Declaration($2,$1,$4,@2.first_line,@2.first_column);}
 ;
 
-asignacion_variables: IDENTIFICADOR IGUAL expression P_COMA {$$ = new asignation.Asignation($1,$3,@2.first_line,@2.first_column);}
+asignacion_variables: IDENTIFICADOR IGUAL expression {$$ = new asignation.Asignation($1,$3,@2.first_line,@2.first_column);}
 ;
 
 while: WHILE PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C { $$ = new whilee.While($3,$6,@2.first_line,@2.first_column); }
 ;
 
 do_while: DO LLAVE_A instrucciones LLAVE_C WHILE PARENTESIS_A expression PARENTESIS_C P_COMA { $$ = new do_while.DoWhile($7, $3,@2.first_line,@2.first_column); }
+;
+
+for: FOR PARENTESIS_A declaracion_variables expression P_COMA asignacion_variables PARENTESIS_C LLAVE_A instrucciones LLAVE_C {$$ = new print.Print($4,@2.first_line,@2.first_column);}
+    |FOR PARENTESIS_A declaracion_variables expression P_COMA expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C {$$ = new print.Print($4,@2.first_line,@2.first_column);}
 ;
 
 if: IF PARENTESIS_A expression PARENTESIS_C LLAVE_A instrucciones LLAVE_C {$$ = new iff.If($3,$6,@2.first_line,@2.first_column) ;}
@@ -224,6 +239,21 @@ else_if: else_if ELSE if
         $$ =[];
         $$.push($1);
     }
+;
+
+switch: SWITCH PARENTESIS_A expression PARENTESIS_C LLAVE_A case_list default LLAVE_C {$$ = new print.Print($3,@2.first_line,@2.first_column);}
+    |SWITCH PARENTESIS_A expression PARENTESIS_C LLAVE_A case_list LLAVE_C {$$ = new print.Print($3,@2.first_line,@2.first_column);}
+    |SWITCH PARENTESIS_A expression PARENTESIS_C LLAVE_A default LLAVE_C {$$ = new print.Print($3,@2.first_line,@2.first_column);}
+;
+
+case_list: case_list case
+    |case
+;
+
+default: DEFAULT DOSPUNTOS instrucciones
+;
+
+case: CASE expression DOSPUNTOS instrucciones
 ;
 
 function: tipo IDENTIFICADOR PARENTESIS_A parametros PARENTESIS_C LLAVE_A instrucciones LLAVE_C {$$ = new func.Function($2,$1,$7,$4,@2.first_line,@2.first_column);}
