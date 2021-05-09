@@ -1,4 +1,4 @@
-import { Response, Request, response } from 'express';
+import { Response, Request } from 'express';
 import { Enviroment } from '../enviroment/enviroment';
 import { Sym } from '../enviroment/sym';
 import { Asignation } from '../tree/asignacion';
@@ -11,7 +11,6 @@ import { FunctionCall } from '../tree/function_call';
 import { If } from '../tree/if';
 import { Instruccion } from '../tree/instruccion';
 import { ListIf } from '../tree/list_if';
-import { ParametersIns } from '../tree/parametersIns';
 import { Print } from '../tree/print';
 import { Return } from '../tree/return';
 import { While } from '../tree/while';
@@ -69,6 +68,7 @@ class GrammarController {
     let root: Instruccion[] = GrammarController.instructionList;
     GrammarController.makeGraph(root, 0);
     graph = 'digraph G {';
+    graph += '0 [label="padre"];';
     graph += GrammarController.graph;
     graph += '}';
     const fs = require('fs');

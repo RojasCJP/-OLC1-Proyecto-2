@@ -12,7 +12,7 @@ export class ReportsComponent implements OnInit {
   errores: any[] = [];
   symbolos: any[] = [];
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     if (localStorage.getItem("reportes") != "reportes") {
       this.grammarServices.errors().subscribe(
         (res) => (this.errores = res),

@@ -55,6 +55,7 @@ class GrammarController {
         let root = GrammarController.instructionList;
         GrammarController.makeGraph(root, 0);
         graph = 'digraph G {';
+        graph += '0 [label="padre"];';
         graph += GrammarController.graph;
         graph += '}';
         const fs = require('fs');

@@ -11,6 +11,7 @@ export class GrammarComponent implements OnInit {
   codigo: string = "";
   codigoJson: Codigo = { codigo: "" };
   consola: string = "";
+  archivoEntrada: File;
   constructor(private grammarService: GrammarService) {}
 
   ngOnInit(): void {
@@ -31,11 +32,30 @@ export class GrammarComponent implements OnInit {
   }
 
   abrirReportes() {
+    this.grammarService.astTree().subscribe(
+      (res) => console.log(res),
+      (err) => console.log(err)
+    );
     window.open("/reportes", "_blank");
     localStorage.setItem("reportes", "no reportes");
   }
 
   nuevaPestana() {
     window.open("/editor", "_blank");
+  }
+
+  openFile(event: Event) {
+    const elemento = event.currentTarget as HTMLInputElement;
+    let fileList: FileList | null = elemento.files;
+    if (fileList) {
+      console.log("archivo cargado exitosamente");
+      this.archivoEntrada = fileList.item(0);
+      let reader: FileReader = new FileReader();
+      console.log(this.archivoEntrada);
+      reader.onloadend = (entry) => {
+        this.codigo = reader.result?.toString();
+      };
+      reader.readAsText(this.archivoEntrada);
+    }
   }
 }

@@ -296,4 +296,6 @@ tipo: INT {$$ = sym.EnumType.int;}
     |VOID {$$ = sym.EnumType.void}
 ;
 
-print_: PRINT PARENTESIS_A expression PARENTESIS_C {$$ = new print.Print($3,@2.first_line,@2.first_column);};
+print_: PRINT PARENTESIS_A expression PARENTESIS_C {$$ = new print.Print($3,@2.first_line,@2.first_column);}
+    | PRINT PARENTESIS_A PARENTESIS_C {$$ = new print.Print(null, @2.first_line, @2.first_column)}
+;

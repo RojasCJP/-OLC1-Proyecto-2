@@ -22,4 +22,8 @@ export class GrammarService {
   symbols(): Observable<any> {
     return this.http.get(`${this.API_URL}/grammar/sym`);
   }
+
+  astTree(): Observable<any> {
+    return this.http.get(`${this.API_URL}/grammar/graph`);
+  }
 }
